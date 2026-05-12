@@ -1,222 +1,167 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<title>ScanVote</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="dynamsoft/dbr.bundle.js"></script>
-
-<style>
-* { box-sizing: border-box; touch-action: manipulation; }
-body { font-family: sans-serif; padding: 10px; background: #f0f2f5; margin: 0; text-align: center; }
-#status { font-weight: bold; margin: 10px auto; min-height: 65px; padding: 15px; background: white; border-radius: 12px; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-size: 16px; }
-#scanner-root { width: min(90vw, 400px); aspect-ratio: 1; margin: 0 auto; position: relative; border: 4px solid #fff; border-radius: 20px; overflow: hidden; background: #000; }
-.dce-video-container video { object-fit: contain !important; }
-.row { display: flex; gap: 8px; justify-content: center; max-width: 400px; margin: 15px auto; }
-button { padding: 15px; flex: 1; border-radius: 10px; border: none; color: white; font-weight: bold; font-size: 16px; cursor: pointer; }
-button:disabled { opacity: 0.4; cursor: not-allowed; }
-</style>
+  <meta charset="UTF-8">
+  <title>Học phí</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 20px auto;
+      text-align: center;
+      font-size: 28px;
+    }
+    select, button {
+      padding: 10px;
+      margin: 10px 0;
+      width: 100%;
+      font-size: 28px;
+    }
+    .info {
+      margin-top: 20px;
+      padding: 18px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      background: #f9f9f9;
+    }
+    .info p {
+      margin: 12px 0;
+      font-size: 24px;
+    }
+    .amount {
+      color: red;
+      font-weight: bold;
+      font-size: 26px;
+    }
+    .content {
+      font-weight: bold;
+      font-size: 24px;
+    }
+    img.qr {
+      margin: 18px 0;
+      max-width: 800px;
+    }
+    .save-btn {
+      display: none; /* ẩn mặc định */
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 22px;
+      background: #007bff;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      border: none;
+    }
+    .save-btn:disabled {
+      background: #999;
+      cursor: not-allowed;
+    }
+  </style>
 </head>
 <body>
+  <h2 id="title">Học phí</h2>
+  <select id="studentSelect">
+    <option value="">-- Chọn học sinh --</option>
+  </select>
 
-<div id="status">⏳ Đang tải sĩ số...</div>
-<div id="scanner-root">
-  <div id="scanner-ui">
-    <div class="dce-video-container"></div>
+  <div id="details" class="info" style="display:none;">
+    <p>
+      <strong>Số tiền:</strong> 
+      <span id="fee" class="amount"></span> VNĐ
+    </p>
+    <p>
+      <strong>Nội dung CK:</strong> 
+      <span id="info" class="content"></span>
+    </p>
+    <img id="qr" class="qr" src="" alt="QR Code"/>
+    <br/>
+    <button id="downloadQR" class="save-btn">Lưu ảnh</button>
   </div>
-</div>
 
-<div class="row">
-    <button id="startBtn" onclick="startScan()" style="background:#28a745;">▶️ BẮT ĐẦU</button>
-    <button id="stopBtn" onclick="stopScan()" style="background:#dc3545;" disabled>⏹️ DỪNG</button>
-</div>
+  <script>
+    const files = {
+      "Lớp Anh 6": "/LopAnh6.json",
+      "Lớp Anh 6.1": "/LopAnh61.json",
+      "Lớp Anh 6.2": "/LopAnh62.json",
+      "Lớp Anh 7": "/LopAnh7.json",
+      "Lớp Anh 7.1": "/LopAnh71.json",
+      "Lớp Anh 7.2": "/LopAnh72.json",
+      "Lớp Anh 8": "/LopAnh8.json",
+      "Lớp Anh 8.1": "/LopAnh81.json",
+      "Lớp Anh 8.2": "/LopAnh82.json",
+      "Lớp Anh 9": "/LopAnh9.json",
+      "Lớp Anh 9.1": "/LopAnh91.json",
+      "Lớp Anh 9.2": "/LopAnh92.json"
+    };
 
-<script>
-// --- 1. KHỞI TẠO FIREBASE ---
-const firebaseConfig = {
-    apiKey: "AIzaSyAsD7XOkOm1OoSkTeThBcBXiAuCxKYOGkk",
-    projectId: "hoa-english"
-};
-
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
-const db = firebase.firestore();
-
-// Cấu hình quan trọng để nhận tín hiệu biển báo ổn định
-db.settings({ experimentalForceLongPolling: true });
-
-// --- 2. BIẾN TOÀN CỤC ---
-let validStudentIDs = new Set();
-let siSo = 0;
-let scanner = null;
-let isScanning = false;
-let currentSessionId = null;
-let currentSignIndex = null;
-let scannedInSession = new Set();
-let sessionCompleted = false;
-
-// --- 3. TẢI SĨ SỐ ---
-function loadStudents() {
-    console.log("🚀 Đang nạp sĩ số...");
-    fetch("./student.txt", { cache: "no-store" })
-        .then(r => {
-            if (!r.ok) throw new Error("Không thấy file student.txt");
-            return r.text();
-        })
-        .then(t => {
-            validStudentIDs.clear();
-            t.trim().split("\n").forEach(line => {
-                let p = line.trim().split("|");
-                if(p.length >= 2) validStudentIDs.add(p[1]);
-            });
-            siSo = validStudentIDs.size;
-            updateStatus("🏫 Đã tải " + siSo + " học sinh.\nHãy chọn biển để vote!");
-            console.log("✅ Đã tải danh sách học sinh.");
-        })
-        .catch(err => {
-            console.error("❌ Lỗi tải sĩ số:", err);
-            updateStatus("⚠️ Lỗi: Không tìm thấy file student.txt");
-        });
-}
-
-// --- 4. KHỞI TẠO DYNAMSOFT (FIX LỖI UNDEFINED) ---
-async function initDynamsoft() {
-    // Nếu chưa thấy thư viện, đợi 500ms rồi thử lại (tránh lỗi Uncaught TypeError)
-    if (typeof Dynamsoft === 'undefined' || !Dynamsoft.DBR) {
-        console.warn("⏳ Đợi Dynamsoft nạp file JS...");
-        setTimeout(initDynamsoft, 500);
-        return;
+    async function loadData(sheetName) {
+      const url = files[sheetName];
+      const res = await fetch(url);
+      return await res.json();
     }
 
-    try {
-        Dynamsoft.DBR.BarcodeReader.license = "DLS2eyJoYW5kc2hha2VDb2RlIjoiMTA1Mjk4MTk0LU1UQTFNams0TVRrMExYZGxZaTFVY21saGJGQnliMm8iLCJtYWluU2VydmVyVVJMIjoiaHR0cHM6Ly9tZGxzLmR5bmFtc29mdG9ubGluZS5jb20vIiwib3JnYW5pemF0aW9uSUQiOiIxMDUyOTgxOTQiLCJzdGFuZGJ5U2VydmVyVVJMIjoiaHR0cHM6Ly9zZGxzLmR5bmFtc29mdG9ubGluZS5jb20vIiwiY2hlY2tDb2RlIjoxOTg2ODM2Mjc1fQ==";
-        // Đường dẫn tương đối trỏ vào folder chứa file .wasm
-        Dynamsoft.DBR.BarcodeReader.engineResourcePath = "dynamsoft/";
-        console.log("📦 Dynamsoft đã sẵn sàng.");
-    } catch (e) {
-        console.error("❌ Lỗi cấu hình Dynamsoft:", e);
-    }
-}
+    (async function init() {
+      const sheetName = "Lớp Anh 9.1"; // mặc định
+      const data = await loadData(sheetName);
 
-// --- 5. LẮNG NGHE FIREBASE (NHẬN BIỂN SỐ) ---
-function listenToFirebase() {
-    console.log("🔔 Đang lắng nghe tín hiệu biển báo...");
-    db.doc("system/activeVoteSession").onSnapshot((doc) => {
-        const data = doc.data();
-        console.log("📥 Dữ liệu Firebase:", data);
+      document.getElementById("title").innerText = data[0]?.title || `Học phí ${sheetName}`;
+      const select = document.getElementById("studentSelect");
 
-        if (!data || !data.sessionId) {
-            currentSessionId = null;
-            updateStatus("⚪ Chờ máy tính chọn biển...");
-            if(isScanning) stopScan();
-            return;
+      data.forEach((s, i) => {
+        const opt = document.createElement("option");
+        opt.value = i;
+        opt.textContent = `${s.class} - ${s.name}`;
+        select.appendChild(opt);
+      });
+
+      const qrImg = document.getElementById("qr");
+      const saveBtn = document.getElementById("downloadQR");
+
+      select.onchange = () => {
+        if (select.value === "") {
+          document.getElementById("details").style.display = "none";
+          return;
         }
+        const s = data[select.value];
+        const formattedFee = Number(s.fee).toLocaleString("vi-VN");
+        document.getElementById("fee").innerText = formattedFee;
+        document.getElementById("info").innerText = s.info;
 
-        if (currentSessionId !== data.sessionId) {
-            currentSessionId = data.sessionId; 
-            currentSignIndex = data.signIndex; 
-            scannedInSession.clear(); 
-            sessionCompleted = false;
-            updateStatus(`🟢 Sẵn sàng quét biển số: ${currentSignIndex + 1}`);
-            if(navigator.vibrate) try { navigator.vibrate(100); } catch(e) {}
-        }
-    }, (err) => {
-        console.error("❌ Lỗi Firebase:", err);
-    });
-}
+        // ẩn nút khi ảnh chưa load
+        saveBtn.style.display = "none";
 
-// --- 6. XỬ LÝ QUÉT MÃ ---
-async function startScan() {
-    if(!currentSessionId) {
-        updateStatus("⚠️ Chưa có biển được chọn...");
-        return;
-    }
+        // đổi QR
+        qrImg.src = s.qr;
 
-    try {
-        if(!scanner) {
-            updateStatus("⏳ Đang khởi động camera...");
-            scanner = await Dynamsoft.DBR.BarcodeScanner.createInstance();
-            await scanner.setUIElement(document.getElementById('scanner-ui'));
-            
-            let settings = await scanner.getRuntimeSettings();
-            settings.barcodeFormatIds = Dynamsoft.DBR.EnumBarcodeFormat.BF_QR_CODE;
-            await scanner.updateRuntimeSettings(settings);
+        // khi ảnh load xong mới cho hiện nút
+        qrImg.onload = () => {
+          saveBtn.style.display = "inline-block";
+          saveBtn.onclick = async () => {
+  	  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
-            scanner.onFrameRead = results => {
-                results.forEach(res => handleResult(res.barcodeText, res));
-            };
-        }
+  	  if (isIOS) {
+   	  // iPhone/iPad: mở tab mới để người dùng giữ tay lưu ảnh
+    	   window.open(s.qr, "_blank");
+ 	   } else {
+   	   // PC / Android: tải trực tiếp
+      	   const resp = await fetch(s.qr);
+    	   const blob = await resp.blob();
+    	   const url = URL.createObjectURL(blob);
 
-        await scanner.show();
-        isScanning = true;
-        document.getElementById("startBtn").disabled = true;
-        document.getElementById("stopBtn").disabled = false;
-        updateStatus(`📷 Đang quét biển ${currentSignIndex + 1}... (${scannedInSession.size}/${siSo})`);
-    } catch (e) { 
-        alert("Lỗi camera: " + e.message + "\nLưu ý: Camera yêu cầu HTTPS hoặc Localhost."); 
-    }
-}
+   	   const a = document.createElement("a");
+   	   a.href = url;
+   	   a.download = s.info + ".png";
+   	   a.click();
 
-function handleResult(txt, res) {
-    if(!isScanning || !currentSessionId || sessionCompleted) return;
-    if(!validStudentIDs.has(txt) || scannedInSession.has(txt)) return;
+   	   URL.revokeObjectURL(url);
+  	   }
+	  };
 
-    let answer = "";
-    if(res.localizationResult) {
-        const loc = res.localizationResult;
-        const angle = (Math.atan2(loc.y2 - loc.y1, loc.x2 - loc.x1) * 180 / Math.PI + 360) % 360;
-        if (angle >= 315 || angle < 45) answer = "A";
-        else if (angle >= 45 && angle < 135) answer = "D";
-        else if (angle >= 135 && angle < 225) answer = "C";
-        else answer = "B";
-    }
+        };
 
-    if(answer === "") return;
-    scannedInSession.add(txt);
-
-    // Gửi kết quả lên Firestore
-    db.collection("voteSessions").doc(currentSessionId).collection("answers").doc(txt).set({
-        studentId: txt,
-        answer: answer,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    });
-
-    if(navigator.vibrate) try { navigator.vibrate(40); } catch(e) {}
-
-    if(scannedInSession.size >= siSo) {
-        completeSession();
-    } else {
-        updateStatus(`✔️ HS ${txt} → ${answer}\n📷 Biển ${currentSignIndex + 1}: ${scannedInSession.size}/${siSo}`);
-    }
-}
-
-async function stopScan() {
-    isScanning = false;
-    if(scanner) await scanner.hide();
-    document.getElementById("startBtn").disabled = false;
-    document.getElementById("stopBtn").disabled = true;
-}
-
-async function completeSession() {
-    sessionCompleted = true;
-    await stopScan();
-    updateStatus(`✅ Đã xong biển ${currentSignIndex + 1}!\n(${siSo}/${siSo} học sinh)`);
-    if(navigator.vibrate) try { navigator.vibrate([100, 50, 100]); } catch(e) {}
-}
-
-function updateStatus(msg){
-    document.getElementById("status").innerText = msg;
-}
-
-// --- CHẠY LẦN ĐẦU ---
-loadStudents();
-initDynamsoft();
-listenToFirebase();
-
-</script>
+        document.getElementById("details").style.display = "block";
+      };
+    })();
+  </script>
 </body>
 </html>
