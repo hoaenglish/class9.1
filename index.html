@@ -80,40 +80,48 @@
 
   <script>
     const files = {
-      "Lớp Anh 6": "/Lớp Anh 6.json",
-      "Lớp Anh 6.1": "/Lớp Anh 6.1.json",
-      "Lớp Anh 6.2": "/Lớp Anh 6.2.json",
-      "Lớp Anh 7": "/Lớp Anh 7.json",
-      "Lớp Anh 7.1": "/Lớp Anh 7.1.json",
-      "Lớp Anh 7.2": "/Lớp Anh 7.2.json",
-      "Lớp Anh 8": "/Lớp Anh 8.json",
-      "Lớp Anh 8.1": "/Lớp Anh 8.1.json",
-      "Lớp Anh 8.2": "/Lớp Anh 8.2.json",
-      "Lớp Anh 9": "/Lớp Anh 9.json",
-      "Lớp Anh 9.1": "/Lớp Anh 9.1.json",
-      "Lớp Anh 9.2": "/Lớp Anh 9.2.json"
+      "Lớp Anh 6": "Lớp Anh 6.json",
+      "Lớp Anh 6.1": "Lớp Anh 6.1.json",
+      "Lớp Anh 6.2": "Lớp Anh 6.2.json",
+      "Lớp Anh 7": "Lớp Anh 7.json",
+      "Lớp Anh 7.1": "Lớp Anh 7.1.json",
+      "Lớp Anh 7.2": "Lớp Anh 7.2.json",
+      "Lớp Anh 8": "Lớp Anh 8.json",
+      "Lớp Anh 8.1": "Lớp Anh 8.1.json",
+      "Lớp Anh 8.2": "Lớp Anh 8.2.json",
+      "Lớp Anh 9": "Lớp Anh 9.json",
+      "Lớp Anh 9.1": "Lớp Anh 9.1.json",
+      "Lớp Anh 9.2": "Lớp Anh 9.2.json"
     };
 
-    async function loadData(sheetName) {
-      const url = files[sheetName];
-      const res = await fetch(url);
-      return await res.json();
-    }
-
+	// Sửa hàm loadData để cập nhật json khi mở web mà ko đọc lại cache
+	async function loadData(sheetName) {
+	    const jsonFileName = files[sheetName];
+	    
+	    // 💡 TẠO THAM SỐ NGẪU NHIÊN BẰNG TIMESTAMP CỦA CLIENT
+	    const randomBuster = new Date().getTime(); 
+	    
+	    // Gắn tham số ngẫu nhiên vào URL (vd: Lớp Anh 6.json?v=1678886400000)
+	    const url = `${jsonFileName}?v=${randomBuster}`; 
+	    
+	    const res = await fetch(url);
+	    if (!res.ok) {
+	        console.error("Không tải được file JSON:", res.status);
+	        return { title: "Lỗi tải dữ liệu", students: [] };
+	    }
+	    return await res.json();
+	}
+	
     (async function init() {
-      // Tự động lấy tên lớp từ tiêu đề trang hoặc mặc định
-      const sheetName = "Lớp Anh 9.1"; 
-      const rawData = await loadData(sheetName);
+      const sheetName = "Lớp Anh 9.1"; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+      const data = await loadData(sheetName);
 
-      // Vì JSON của bạn có dạng { "title": "...", "students": [...] }
-      // Nên chúng ta cần truy cập vào rawData.students
-      const students = rawData.students || [];
-      const pageTitle = rawData.title || `Học phí ${sheetName}`;
+      //document.getElementById("title").innerText = data[0]?.title || `Học phí Tháng 9 ${sheetName}`;
+      document.getElementById("title").innerText = data.title || "Học phí";
 
-      document.getElementById("title").innerText = pageTitle;
       const select = document.getElementById("studentSelect");
 
-      students.forEach((s, i) => {
+      data.students.forEach((s, i) => {
         const opt = document.createElement("option");
         opt.value = i;
         opt.textContent = `${s.class} - ${s.name}`;
@@ -128,36 +136,47 @@
           document.getElementById("details").style.display = "none";
           return;
         }
-        
-        const s = students[select.value];
+        const s = data.students[select.value];
         const formattedFee = Number(s.fee).toLocaleString("vi-VN");
         document.getElementById("fee").innerText = formattedFee;
         document.getElementById("info").innerText = s.info;
 
+        // ẩn nút khi ảnh chưa load
         saveBtn.style.display = "none";
+
+        // đổi QR
         qrImg.src = s.qr;
 
+        // khi ảnh load xong mới cho hiện nút
         qrImg.onload = () => {
           saveBtn.style.display = "inline-block";
           saveBtn.onclick = async () => {
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-            if (isIOS) {
-              window.open(s.qr, "_blank");
-            } else {
-              const resp = await fetch(s.qr);
-              const blob = await resp.blob();
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = s.info + ".png";
-              a.click();
-              URL.revokeObjectURL(url);
-            }
-          };
+  	  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+  	  if (isIOS) {
+   	  // iPhone/iPad: mở tab mới để người dùng giữ tay lưu ảnh
+    	   window.open(s.qr, "_blank");
+ 	   } else {
+   	   // PC / Android: tải trực tiếp
+      	   const resp = await fetch(s.qr);
+    	   const blob = await resp.blob();
+    	   const url = URL.createObjectURL(blob);
+
+   	   const a = document.createElement("a");
+   	   a.href = url;
+   	   a.download = s.info + ".png";
+   	   a.click();
+
+   	   URL.revokeObjectURL(url);
+  	   }
+	  };
+
         };
+
         document.getElementById("details").style.display = "block";
       };
     })();
   </script>
 </body>
 </html>
+
