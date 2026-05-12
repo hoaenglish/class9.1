@@ -101,13 +101,19 @@
     }
 
     (async function init() {
-      const sheetName = "Lớp Anh 9.1"; // mặc định
-      const data = await loadData(sheetName);
+      // Tự động lấy tên lớp từ tiêu đề trang hoặc mặc định
+      const sheetName = "Lớp Anh 9.1"; 
+      const rawData = await loadData(sheetName);
 
-      document.getElementById("title").innerText = data[0]?.title || `Học phí ${sheetName}`;
+      // Vì JSON của bạn có dạng { "title": "...", "students": [...] }
+      // Nên chúng ta cần truy cập vào rawData.students
+      const students = rawData.students || [];
+      const pageTitle = rawData.title || `Học phí ${sheetName}`;
+
+      document.getElementById("title").innerText = pageTitle;
       const select = document.getElementById("studentSelect");
 
-      data.forEach((s, i) => {
+      students.forEach((s, i) => {
         const opt = document.createElement("option");
         opt.value = i;
         opt.textContent = `${s.class} - ${s.name}`;
@@ -122,43 +128,33 @@
           document.getElementById("details").style.display = "none";
           return;
         }
-        const s = data[select.value];
+        
+        const s = students[select.value];
         const formattedFee = Number(s.fee).toLocaleString("vi-VN");
         document.getElementById("fee").innerText = formattedFee;
         document.getElementById("info").innerText = s.info;
 
-        // ẩn nút khi ảnh chưa load
         saveBtn.style.display = "none";
-
-        // đổi QR
         qrImg.src = s.qr;
 
-        // khi ảnh load xong mới cho hiện nút
         qrImg.onload = () => {
           saveBtn.style.display = "inline-block";
           saveBtn.onclick = async () => {
-  	  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-
-  	  if (isIOS) {
-   	  // iPhone/iPad: mở tab mới để người dùng giữ tay lưu ảnh
-    	   window.open(s.qr, "_blank");
- 	   } else {
-   	   // PC / Android: tải trực tiếp
-      	   const resp = await fetch(s.qr);
-    	   const blob = await resp.blob();
-    	   const url = URL.createObjectURL(blob);
-
-   	   const a = document.createElement("a");
-   	   a.href = url;
-   	   a.download = s.info + ".png";
-   	   a.click();
-
-   	   URL.revokeObjectURL(url);
-  	   }
-	  };
-
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            if (isIOS) {
+              window.open(s.qr, "_blank");
+            } else {
+              const resp = await fetch(s.qr);
+              const blob = await resp.blob();
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = s.info + ".png";
+              a.click();
+              URL.revokeObjectURL(url);
+            }
+          };
         };
-
         document.getElementById("details").style.display = "block";
       };
     })();
