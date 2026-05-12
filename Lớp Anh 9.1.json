@@ -28,13 +28,6 @@
       "fee": 360000,
       "info": "9A9MinhDung",
       "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA-compact2.png?amount=360000&addInfo=9A9MinhDung&accountName=CHU%20DUC%20THANH"
-    },
-    {
-      "name": "Khánh Linh",
-      "class": "9A9",
-      "fee": 200000,
-      "info": "9A9KhanhLinh",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA-compact2.png?amount=200000&addInfo=9A9KhanhLinh&accountName=CHU%20DUC%20THANH"
     }
   ]
 }
