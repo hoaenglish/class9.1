@@ -2,181 +2,307 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Học phí</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hệ Thống Thu Học Phí - Lớp Anh 9.1</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
+    :root {
+      --primary-color: #4a90e2;
+      --success-color: #2ecc71;
+      --danger-color: #e74c3c;
+      --bg-color: #f4f7f6;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      max-width: 800px;
-      margin: 20px auto;
-      text-align: center;
-      font-size: 28px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      margin: 0;
+      color: #333;
     }
-    select, button {
-      padding: 10px;
-      margin: 10px 0;
-      width: 100%;
-      font-size: 28px;
-    }
-    .info {
-      margin-top: 20px;
-      padding: 18px;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      background: #f9f9f9;
-    }
-    .info p {
-      margin: 12px 0;
-      font-size: 24px;
-    }
-    .amount {
-      color: red;
-      font-weight: bold;
-      font-size: 26px;
-    }
-    .content {
-      font-weight: bold;
-      font-size: 24px;
-    }
-    img.qr {
-      margin: 18px 0;
-      max-width: 800px;
-    }
-    .save-btn {
-      display: none; /* ẩn mặc định */
-      margin-top: 10px;
-      padding: 10px 20px;
-      font-size: 22px;
-      background: #007bff;
+
+    header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
-      border-radius: 8px;
-      cursor: pointer;
-      border: none;
+      padding: 40px 20px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
-    .save-btn:disabled {
-      background: #999;
-      cursor: not-allowed;
+
+    .container {
+      max-width: 1000px;
+      margin: -30px auto 40px;
+      padding: 0 20px;
+    }
+
+    /* List học sinh */
+    .student-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .student-card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+      position: relative;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .student-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+      border-color: var(--primary-color);
+    }
+
+    .student-card.paid {
+      border-color: var(--success-color);
+      opacity: 0.8;
+    }
+
+    .status-icon {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 18px;
+    }
+
+    .status-unpaid { color: var(--danger-color); }
+    .status-paid { color: var(--success-color); }
+
+    .student-name {
+      font-weight: bold;
+      display: block;
+      margin-top: 10px;
+      font-size: 1.1em;
+    }
+
+    .student-class {
+      font-size: 0.9em;
+      color: #777;
+    }
+
+    /* Modal hiển thị QR */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.6);
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-content {
+      background-color: white;
+      margin: 5% auto;
+      padding: 30px;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 500px;
+      text-align: center;
+      position: relative;
+      animation: slideDown 0.4s ease;
+    }
+
+    @keyframes slideDown {
+      from { transform: translateY(-50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .close {
+      position: absolute;
+      right: 20px;
+      top: 15px;
+      font-size: 28px;
+      cursor: pointer;
+      color: #999;
+    }
+
+    .qr-img {
+      width: 100%;
+      max-width: 300px;
+      margin: 20px 0;
+      border: 1px solid #eee;
+      border-radius: 10px;
+    }
+
+    .info-box {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 15px 0;
+      text-align: left;
+    }
+
+    .btn-save {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    /* Thông báo */
+    #notification {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--success-color);
+      color: white;
+      padding: 15px 25px;
+      border-radius: 8px;
+      display: none;
+      z-index: 2000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
   </style>
 </head>
 <body>
-  <h2 id="title">Học phí</h2>
-  <select id="studentSelect">
-    <option value="">-- Chọn học sinh --</option>
-  </select>
 
-  <div id="details" class="info" style="display:none;">
-    <p>
-      <strong>Số tiền:</strong> 
-      <span id="fee" class="amount"></span> VNĐ
-    </p>
-    <p>
-      <strong>Nội dung CK:</strong> 
-      <span id="info" class="content"></span>
-    </p>
-    <img id="qr" class="qr" src="" alt="QR Code"/>
-    <br/>
-    <button id="downloadQR" class="save-btn">Lưu ảnh</button>
+<header>
+  <h1 id="title">Học phí</h1>
+  <p>Vui lòng chọn tên học sinh để thực hiện thanh toán</p>
+</header>
+
+<div class="container">
+  <div id="studentGrid" class="student-grid">
+    </div>
+</div>
+
+<div id="qrModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h3 id="modalName">Tên học sinh</h3>
+    <div class="info-box">
+      <p><strong>Số tiền:</strong> <span id="modalFee" style="color:red; font-weight:bold;"></span> VNĐ</p>
+      <p><strong>Nội dung:</strong> <span id="modalInfo" style="font-weight:bold;"></span></p>
+    </div>
+    <img id="modalQR" class="qr-img" src="" alt="QR Code">
+    <button id="downloadBtn" class="btn-save">Lưu mã QR</button>
   </div>
+</div>
 
-  <script>
-    const files = {
-      "Lớp Anh 6": "Lớp Anh 6.json",
-      "Lớp Anh 6.1": "Lớp Anh 6.1.json",
-      "Lớp Anh 6.2": "Lớp Anh 6.2.json",
-      "Lớp Anh 7": "Lớp Anh 7.json",
-      "Lớp Anh 7.1": "Lớp Anh 7.1.json",
-      "Lớp Anh 7.2": "Lớp Anh 7.2.json",
-      "Lớp Anh 8": "Lớp Anh 8.json",
-      "Lớp Anh 8.1": "Lớp Anh 8.1.json",
-      "Lớp Anh 8.2": "Lớp Anh 8.2.json",
-      "Lớp Anh 9": "Lớp Anh 9.json",
-      "Lớp Anh 9.1": "Lớp Anh 9.1.json",
-      "Lớp Anh 9.2": "Lớp Anh 9.2.json"
+<div id="notification"></div>
+
+<script>
+  const sheetName = "Lớp Anh 9.1";
+  const jsonUrl = "/Lớp Anh 9.1.json"; // Đường dẫn file của bạn
+  let currentData = [];
+
+  // 1. Tải dữ liệu
+  async function fetchData() {
+    try {
+      const res = await fetch(jsonUrl + '?t=' + new Date().getTime()); // Tránh cache
+      const data = await res.json();
+      
+      // Kiểm tra nếu có sự thay đổi (đóng tiền mới)
+      if (currentData.length > 0) {
+        checkUpdates(currentData, data);
+      }
+      
+      currentData = data;
+      renderStudents(data);
+    } catch (e) {
+      console.error("Lỗi tải dữ liệu:", e);
+    }
+  }
+
+  // 2. Kiểm tra cập nhật (thông báo khi vừa đóng tiền)
+  function checkUpdates(oldData, newData) {
+    newData.forEach((student, index) => {
+      if (oldData[index] && oldData[index].fee > 0 && student.fee === 0) {
+        showNotification(`🎉 ${student.name} đã hoàn thành học phí!`);
+      }
+    });
+  }
+
+  // 3. Hiển thị danh sách thẻ học sinh
+  function renderStudents(data) {
+    const grid = document.getElementById("studentGrid");
+    grid.innerHTML = "";
+    
+    data.forEach((s, i) => {
+      const isPaid = s.fee === 0;
+      const card = document.createElement("div");
+      card.className = `student-card ${isPaid ? 'paid' : ''}`;
+      card.innerHTML = `
+        <div class="status-icon">
+          ${isPaid ? '<i class="fas fa-check-circle status-paid"></i>' : '<i class="fas fa-times-circle status-unpaid"></i>'}
+        </div>
+        <i class="fas fa-user-graduate" style="font-size: 2em; color: #ddd;"></i>
+        <span class="student-name">${s.name}</span>
+        <span class="student-class">Lớp: ${s.class}</span>
+      `;
+      
+      if (!isPaid) {
+        card.onclick = () => openModal(s);
+      } else {
+        card.onclick = () => showNotification(`${s.name} đã đóng tiền rồi nhé!`);
+      }
+      
+      grid.appendChild(card);
+    });
+  }
+
+  // 4. Modal Logic
+  const modal = document.getElementById("qrModal");
+  const closeBtn = document.getElementsByClassName("close")[0];
+
+  function openModal(student) {
+    document.getElementById("modalName").innerText = student.name;
+    document.getElementById("modalFee").innerText = student.fee.toLocaleString("vi-VN");
+    document.getElementById("modalInfo").innerText = student.info;
+    document.getElementById("modalQR").src = student.qr;
+    
+    document.getElementById("downloadBtn").onclick = () => {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        if (isIOS) {
+            window.open(student.qr, "_blank");
+        } else {
+            downloadImage(student.qr, student.info);
+        }
     };
 
-	// Sửa hàm loadData để cập nhật json khi mở web mà ko đọc lại cache
-	async function loadData(sheetName) {
-	    const jsonFileName = files[sheetName];
-	    
-	    // 💡 TẠO THAM SỐ NGẪU NHIÊN BẰNG TIMESTAMP CỦA CLIENT
-	    const randomBuster = new Date().getTime(); 
-	    
-	    // Gắn tham số ngẫu nhiên vào URL (vd: Lớp Anh 6.json?v=1678886400000)
-	    const url = `${jsonFileName}?v=${randomBuster}`; 
-	    
-	    const res = await fetch(url);
-	    if (!res.ok) {
-	        console.error("Không tải được file JSON:", res.status);
-	        return { title: "Lỗi tải dữ liệu", students: [] };
-	    }
-	    return await res.json();
-	}
-	
-    (async function init() {
-      const sheetName = "Lớp Anh 9.1"; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-      const data = await loadData(sheetName);
+    modal.style.display = "block";
+  }
 
-      //document.getElementById("title").innerText = data[0]?.title || `Học phí Tháng 9 ${sheetName}`;
-      document.getElementById("title").innerText = data.title || "Học phí";
+  closeBtn.onclick = () => modal.style.display = "none";
+  window.onclick = (event) => { if (event.target == modal) modal.style.display = "none"; }
 
-      const select = document.getElementById("studentSelect");
+  // 5. Download Logic
+  async function downloadImage(src, name) {
+    const resp = await fetch(src);
+    const blob = await resp.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name + ".png";
+    a.click();
+  }
 
-      data.students.forEach((s, i) => {
-        const opt = document.createElement("option");
-        opt.value = i;
-        opt.textContent = `${s.class} - ${s.name}`;
-        select.appendChild(opt);
-      });
+  // 6. Thông báo
+  function showNotification(msg) {
+    const toast = document.getElementById("notification");
+    toast.innerText = msg;
+    toast.style.display = "block";
+    setTimeout(() => { toast.style.display = "none"; }, 5000);
+  }
 
-      const qrImg = document.getElementById("qr");
-      const saveBtn = document.getElementById("downloadQR");
+  // Khởi chạy & Tự động cập nhật mỗi 10 giây
+  fetchData();
+  setInterval(fetchData, 10000); 
 
-      select.onchange = () => {
-        if (select.value === "") {
-          document.getElementById("details").style.display = "none";
-          return;
-        }
-        const s = data.students[select.value];
-        const formattedFee = Number(s.fee).toLocaleString("vi-VN");
-        document.getElementById("fee").innerText = formattedFee;
-        document.getElementById("info").innerText = s.info;
-
-        // ẩn nút khi ảnh chưa load
-        saveBtn.style.display = "none";
-
-        // đổi QR
-        qrImg.src = s.qr;
-
-        // khi ảnh load xong mới cho hiện nút
-        qrImg.onload = () => {
-          saveBtn.style.display = "inline-block";
-          saveBtn.onclick = async () => {
-  	  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-
-  	  if (isIOS) {
-   	  // iPhone/iPad: mở tab mới để người dùng giữ tay lưu ảnh
-    	   window.open(s.qr, "_blank");
- 	   } else {
-   	   // PC / Android: tải trực tiếp
-      	   const resp = await fetch(s.qr);
-    	   const blob = await resp.blob();
-    	   const url = URL.createObjectURL(blob);
-
-   	   const a = document.createElement("a");
-   	   a.href = url;
-   	   a.download = s.info + ".png";
-   	   a.click();
-
-   	   URL.revokeObjectURL(url);
-  	   }
-	  };
-
-        };
-
-        document.getElementById("details").style.display = "block";
-      };
-    })();
-  </script>
+</script>
 </body>
 </html>
-
