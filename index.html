@@ -1,308 +1,786 @@
+```html
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hệ Thống Thu Học Phí - Lớp Anh 9.1</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <style>
-    :root {
-      --primary-color: #4a90e2;
-      --success-color: #2ecc71;
-      --danger-color: #e74c3c;
-      --bg-color: #f4f7f6;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: var(--bg-color);
-      margin: 0;
-      color: #333;
-    }
+<title>Học phí lớp học</title>
 
-    header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 40px 20px;
-      text-align: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
+<meta name="robots" content="noindex,nofollow">
 
-    .container {
-      max-width: 1000px;
-      margin: -30px auto 40px;
-      padding: 0 20px;
-    }
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    /* List học sinh */
-    .student-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 15px;
-      margin-top: 20px;
-    }
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    .student-card {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      border: 2px solid transparent;
-      position: relative;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    }
+<style>
 
-    .student-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-      border-color: var(--primary-color);
-    }
+*{
+  box-sizing:border-box;
+}
 
-    .student-card.paid {
-      border-color: var(--success-color);
-      opacity: 0.8;
-    }
+body{
+  margin:0;
+  padding:0;
+  font-family:'Be Vietnam Pro',sans-serif;
+  background:#f5f7fb;
+  color:#1e293b;
+}
 
-    .status-icon {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      font-size: 18px;
-    }
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:20px;
+}
 
-    .status-unpaid { color: var(--danger-color); }
-    .status-paid { color: var(--success-color); }
+.hero{
+  background:linear-gradient(135deg,#2563eb,#4f46e5);
+  color:white;
+  border-radius:28px;
+  padding:30px 24px;
+  box-shadow:0 15px 40px rgba(37,99,235,.25);
+}
 
-    .student-name {
-      font-weight: bold;
-      display: block;
-      margin-top: 10px;
-      font-size: 1.1em;
-    }
+.hero h1{
+  margin:0;
+  font-size:34px;
+  font-weight:700;
+}
 
-    .student-class {
-      font-size: 0.9em;
-      color: #777;
-    }
+.hero p{
+  margin-top:10px;
+  opacity:.95;
+  line-height:1.5;
+}
 
-    /* Modal hiển thị QR */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.6);
-      backdrop-filter: blur(5px);
-    }
+.stats{
+  display:flex;
+  gap:12px;
+  margin-top:24px;
+  flex-wrap:wrap;
+}
 
-    .modal-content {
-      background-color: white;
-      margin: 5% auto;
-      padding: 30px;
-      border-radius: 20px;
-      width: 90%;
-      max-width: 500px;
-      text-align: center;
-      position: relative;
-      animation: slideDown 0.4s ease;
-    }
+.stat{
+  flex:1;
+  min-width:120px;
+  background:rgba(255,255,255,.14);
+  border-radius:18px;
+  padding:14px;
+  backdrop-filter:blur(10px);
+}
 
-    @keyframes slideDown {
-      from { transform: translateY(-50px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
+.stat-number{
+  font-size:28px;
+  font-weight:700;
+}
 
-    .close {
-      position: absolute;
-      right: 20px;
-      top: 15px;
-      font-size: 28px;
-      cursor: pointer;
-      color: #999;
-    }
+.stat-label{
+  margin-top:4px;
+  font-size:14px;
+}
 
-    .qr-img {
-      width: 100%;
-      max-width: 300px;
-      margin: 20px 0;
-      border: 1px solid #eee;
-      border-radius: 10px;
-    }
+.search{
+  margin-top:20px;
+}
 
-    .info-box {
-      background: #f8f9fa;
-      padding: 15px;
-      border-radius: 10px;
-      margin: 15px 0;
-      text-align: left;
-    }
+.search input{
+  width:100%;
+  border:none;
+  outline:none;
+  padding:16px;
+  border-radius:16px;
+  font-size:16px;
+}
 
-    .btn-save {
-      background: var(--primary-color);
-      color: white;
-      border: none;
-      padding: 12px 25px;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-      width: 100%;
-    }
+.student-list{
+  margin-top:24px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
 
-    /* Thông báo */
-    #notification {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: var(--success-color);
-      color: white;
-      padding: 15px 25px;
-      border-radius: 8px;
-      display: none;
-      z-index: 2000;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-  </style>
+.card{
+  background:white;
+  border-radius:24px;
+  overflow:hidden;
+  box-shadow:0 8px 24px rgba(15,23,42,.06);
+  border:2px solid transparent;
+  transition:.25s;
+}
+
+.card:hover{
+  transform:translateY(-2px);
+}
+
+.card.paid{
+  border-color:#22c55e;
+  background:linear-gradient(180deg,#fff,#f0fdf4);
+}
+
+.card.unpaid{
+  border-color:#fcd34d;
+}
+
+.card-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding:20px;
+  cursor:pointer;
+}
+
+.left{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+.icon{
+  width:46px;
+  height:46px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:22px;
+  flex-shrink:0;
+}
+
+.paid .icon{
+  background:#dcfce7;
+  color:#16a34a;
+}
+
+.unpaid .icon{
+  background:#fef3c7;
+  color:#d97706;
+}
+
+.name{
+  font-size:20px;
+  font-weight:700;
+}
+
+.status{
+  margin-top:4px;
+  font-size:14px;
+}
+
+.paid .status{
+  color:#16a34a;
+}
+
+.unpaid .status{
+  color:#d97706;
+}
+
+.amount{
+  font-size:24px;
+  font-weight:700;
+  color:#dc2626;
+}
+
+.expand{
+  max-height:0;
+  overflow:hidden;
+  transition:max-height .4s ease;
+  background:#f8fafc;
+}
+
+.expand-inner{
+  padding:0 20px 22px;
+}
+
+.info-box{
+  background:white;
+  border-radius:18px;
+  padding:18px;
+}
+
+.label{
+  font-size:13px;
+  color:#64748b;
+}
+
+.value{
+  font-size:18px;
+  font-weight:700;
+  margin-top:4px;
+  word-break:break-all;
+}
+
+.bank{
+  margin-top:18px;
+  background:#eff6ff;
+  border-radius:16px;
+  padding:14px;
+}
+
+.bank-row{
+  margin-bottom:10px;
+}
+
+.qr-wrap{
+  text-align:center;
+  margin-top:20px;
+}
+
+.qr-wrap img{
+  width:100%;
+  max-width:380px;
+  border-radius:22px;
+  box-shadow:0 10px 28px rgba(0,0,0,.08);
+}
+
+.btn{
+  margin-top:16px;
+  border:none;
+  background:#2563eb;
+  color:white;
+  padding:14px 22px;
+  border-radius:14px;
+  font-size:16px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.toast{
+  position:fixed;
+  top:20px;
+  right:20px;
+  background:#16a34a;
+  color:white;
+  padding:18px 20px;
+  border-radius:18px;
+  box-shadow:0 12px 30px rgba(0,0,0,.15);
+  opacity:0;
+  transform:translateY(-20px);
+  transition:.3s;
+  z-index:9999;
+  max-width:320px;
+}
+
+.toast.show{
+  opacity:1;
+  transform:translateY(0);
+}
+
+.footer{
+  text-align:center;
+  margin-top:36px;
+  color:#64748b;
+  font-size:14px;
+  padding-bottom:30px;
+}
+
+@media(max-width:768px){
+
+  .hero h1{
+    font-size:28px;
+  }
+
+  .name{
+    font-size:18px;
+  }
+
+  .amount{
+    font-size:18px;
+  }
+
+}
+
+</style>
 </head>
+
 <body>
 
-<header>
-  <h1 id="title">Học phí</h1>
-  <p>Vui lòng chọn tên học sinh để thực hiện thanh toán</p>
-</header>
-
 <div class="container">
-  <div id="studentGrid" class="student-grid">
-    </div>
-</div>
 
-<div id="qrModal" class="modal">
-  <div class="modal-content">
-    <span class="close">&times;</span>
-    <h3 id="modalName">Tên học sinh</h3>
-    <div class="info-box">
-      <p><strong>Số tiền:</strong> <span id="modalFee" style="color:red; font-weight:bold;"></span> VNĐ</p>
-      <p><strong>Nội dung:</strong> <span id="modalInfo" style="font-weight:bold;"></span></p>
+  <div class="hero">
+
+    <h1 id="title">Học phí lớp học</h1>
+
+    <p>
+      Thông tin sẽ tự động cập nhật sau khi chuyển khoản thành công.
+    </p>
+
+    <div class="stats">
+
+      <div class="stat">
+        <div class="stat-number" id="totalCount">0</div>
+        <div class="stat-label">Học sinh</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-number" id="paidCount">0</div>
+        <div class="stat-label">Đã đóng</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-number" id="unpaidCount">0</div>
+        <div class="stat-label">Chưa đóng</div>
+      </div>
+
     </div>
-    <img id="modalQR" class="qr-img" src="" alt="QR Code">
-    <button id="downloadBtn" class="btn-save">Lưu mã QR</button>
+
+    <div class="search">
+      <input id="searchInput" type="text" placeholder="🔍 Tìm học sinh...">
+    </div>
+
   </div>
+
+  <div class="student-list" id="studentList"></div>
+
+  <div class="footer">
+    Nếu đã chuyển khoản nhưng chưa được ghi nhận, vui lòng chờ vài giây để hệ thống cập nhật.
+  </div>
+
 </div>
 
-<div id="notification"></div>
+<div class="toast" id="toast"></div>
 
 <script>
-  const sheetName = "Lớp Anh 9.1";
-  const jsonUrl = "/Lớp Anh 9.1.json"; // Đường dẫn file của bạn
-  let currentData = [];
 
-  // 1. Tải dữ liệu
-  async function fetchData() {
-    try {
-      const res = await fetch(jsonUrl + '?t=' + new Date().getTime()); // Tránh cache
-      const data = await res.json();
-      
-      // Kiểm tra nếu có sự thay đổi (đóng tiền mới)
-      if (currentData.length > 0) {
-        checkUpdates(currentData, data);
+// ======================================================
+// CONFIG
+// ======================================================
+
+const JSON_FILE = "Lớp Anh 9.1.json";
+const POLL_INTERVAL = 5000;
+
+
+// ======================================================
+// GLOBAL
+// ======================================================
+
+let currentData = null;
+let polling = null;
+
+// lưu danh sách QR đang mở
+const openedStudents = new Set();
+
+
+// ======================================================
+// LOAD JSON
+// ======================================================
+
+async function loadData(){
+
+  const url = JSON_FILE + "?v=" + Date.now();
+
+  const res = await fetch(url);
+
+  if(!res.ok){
+    throw new Error("Không tải được JSON");
+  }
+
+  return await res.json();
+}
+
+
+// ======================================================
+// MONEY
+// ======================================================
+
+function money(v){
+  return Number(v || 0).toLocaleString("vi-VN");
+}
+
+
+// ======================================================
+// TOAST
+// ======================================================
+
+function showToast(msg){
+
+  const toast = document.getElementById("toast");
+
+  toast.innerText = msg;
+
+  toast.classList.add("show");
+
+  setTimeout(()=>{
+    toast.classList.remove("show");
+  },4000);
+}
+
+
+// ======================================================
+// RENDER
+// ======================================================
+
+function render(data){
+
+  currentData = data;
+
+  const list = document.getElementById("studentList");
+
+  list.innerHTML = "";
+
+  document.getElementById("title").innerText =
+    data.title || "Học phí";
+
+  const total = data.students.length;
+
+  const paid = data.students.filter(x=>x.fee <= 0).length;
+
+  const unpaid = total - paid;
+
+  document.getElementById("totalCount").innerText = total;
+  document.getElementById("paidCount").innerText = paid;
+  document.getElementById("unpaidCount").innerText = unpaid;
+
+  const keyword = document
+    .getElementById("searchInput")
+    .value
+    .trim()
+    .toLowerCase();
+
+  data.students.forEach((s,index)=>{
+
+    const isPaid = s.fee <= 0;
+
+    const fullName = `${s.class} - ${s.name}`;
+
+    if(
+      keyword &&
+      !fullName.toLowerCase().includes(keyword)
+    ){
+      return;
+    }
+
+    const card = document.createElement("div");
+
+    card.className =
+      `card ${isPaid ? 'paid' : 'unpaid'}`;
+
+    card.innerHTML = `
+
+      <div class="card-header">
+
+        <div class="left">
+
+          <div class="icon">
+            ${isPaid ? '✓' : '⏳'}
+          </div>
+
+          <div>
+
+            <div class="name">
+              ${fullName}
+            </div>
+
+            <div class="status">
+              ${isPaid ? 'Đã ghi nhận học phí' : 'Chưa thanh toán'}
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="amount">
+          ${isPaid ? 'Đã đóng' : money(s.fee) + 'đ'}
+        </div>
+
+      </div>
+
+      ${!isPaid ? `
+
+      <div class="expand" id="expand-${index}">
+
+        <div class="expand-inner">
+
+          <div class="info-box">
+
+            <div>
+              <div class="label">
+                Nội dung chuyển khoản
+              </div>
+
+              <div class="value">
+                ${s.info}
+              </div>
+            </div>
+
+            <div class="bank">
+
+              <div class="bank-row">
+                <div class="label">Ngân hàng</div>
+                <div class="value">${s.bank.id}</div>
+              </div>
+
+              <div class="bank-row">
+                <div class="label">Số tài khoản</div>
+                <div class="value">${s.bank.account}</div>
+              </div>
+
+              <div class="bank-row">
+                <div class="label">Chủ tài khoản</div>
+                <div class="value">${s.bank.name}</div>
+              </div>
+
+            </div>
+
+            <div class="qr-wrap">
+
+              <img src="${s.qr}" alt="QR">
+
+              <br>
+
+              <button class="btn">
+                Lưu ảnh QR
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      ` : ''}
+
+    `;
+
+    if(!isPaid){
+
+      const header = card.querySelector(".card-header");
+
+      const expand = card.querySelector(".expand");
+
+      const btn = card.querySelector(".btn");
+
+      header.onclick = ()=>{
+
+        const opened =
+          expand.style.maxHeight &&
+          expand.style.maxHeight !== "0px";
+
+        if(opened){
+
+          expand.style.maxHeight = "0px";
+
+          openedStudents.delete(s.info);
+
+          checkStopPolling();
+
+        }else{
+
+          expand.style.maxHeight =
+            expand.scrollHeight + "px";
+
+          openedStudents.add(s.info);
+
+          startPolling();
+        }
+      };
+
+      btn.onclick = async(e)=>{
+
+        e.stopPropagation();
+
+        const isIOS =
+          /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+        if(isIOS){
+
+          window.open(s.qr,"_blank");
+
+          return;
+        }
+
+        const resp = await fetch(s.qr);
+
+        const blob = await resp.blob();
+
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+
+        a.href = url;
+        a.download = s.info + ".png";
+
+        a.click();
+
+        URL.revokeObjectURL(url);
+      };
+    }
+
+    list.appendChild(card);
+  });
+}
+
+
+// ======================================================
+// CHECK UPDATE
+// ======================================================
+
+async function checkUpdate(){
+
+  if(document.hidden){
+    return;
+  }
+
+  if(openedStudents.size === 0){
+    return;
+  }
+
+  try{
+
+    const latest = await loadData();
+
+    let changed = false;
+
+    latest.students.forEach(newStudent=>{
+
+      const oldStudent =
+        currentData.students.find(
+          x => x.info === newStudent.info
+        );
+
+      if(!oldStudent){
+        return;
       }
-      
-      currentData = data;
-      renderStudents(data);
-    } catch (e) {
-      console.error("Lỗi tải dữ liệu:", e);
+
+      if(!openedStudents.has(newStudent.info)){
+        return;
+      }
+
+      // chưa đóng -> đã đóng
+      if(
+        oldStudent.fee > 0 &&
+        newStudent.fee <= 0
+      ){
+
+        changed = true;
+
+        openedStudents.delete(newStudent.info);
+
+        showToast(
+          `✅ Đã ghi nhận thanh toán của ${newStudent.class} - ${newStudent.name}`
+        );
+      }
+
+    });
+
+    if(changed){
+
+      render(latest);
+    }
+
+    checkStopPolling();
+
+  }catch(err){
+
+    console.error(err);
+  }
+}
+
+
+// ======================================================
+// POLLING
+// ======================================================
+
+function startPolling(){
+
+  if(polling){
+    return;
+  }
+
+  polling = setInterval(
+    checkUpdate,
+    POLL_INTERVAL
+  );
+
+  console.log("START POLLING");
+}
+
+function stopPolling(){
+
+  if(!polling){
+    return;
+  }
+
+  clearInterval(polling);
+
+  polling = null;
+
+  console.log("STOP POLLING");
+}
+
+function checkStopPolling(){
+
+  if(openedStudents.size === 0){
+
+    stopPolling();
+  }
+}
+
+
+// ======================================================
+// TAB HIDDEN
+// ======================================================
+
+document.addEventListener(
+  "visibilitychange",
+  ()=>{
+
+    if(document.hidden){
+
+      stopPolling();
+
+    }else{
+
+      if(openedStudents.size > 0){
+
+        startPolling();
+      }
     }
   }
+);
 
-  // 2. Kiểm tra cập nhật (thông báo khi vừa đóng tiền)
-  function checkUpdates(oldData, newData) {
-    newData.forEach((student, index) => {
-      if (oldData[index] && oldData[index].fee > 0 && student.fee === 0) {
-        showNotification(`🎉 ${student.name} đã hoàn thành học phí!`);
-      }
-    });
+
+// ======================================================
+// SEARCH
+// ======================================================
+
+document
+.getElementById("searchInput")
+.addEventListener("input",()=>{
+
+  if(currentData){
+
+    render(currentData);
+  }
+});
+
+
+// ======================================================
+// INIT
+// ======================================================
+
+(async function(){
+
+  try{
+
+    const data = await loadData();
+
+    render(data);
+
+  }catch(err){
+
+    console.error(err);
+
+    alert("Không tải được dữ liệu");
   }
 
-  // 3. Hiển thị danh sách thẻ học sinh
-  function renderStudents(data) {
-    const grid = document.getElementById("studentGrid");
-    grid.innerHTML = "";
-    
-    data.forEach((s, i) => {
-      const isPaid = s.fee === 0;
-      const card = document.createElement("div");
-      card.className = `student-card ${isPaid ? 'paid' : ''}`;
-      card.innerHTML = `
-        <div class="status-icon">
-          ${isPaid ? '<i class="fas fa-check-circle status-paid"></i>' : '<i class="fas fa-times-circle status-unpaid"></i>'}
-        </div>
-        <i class="fas fa-user-graduate" style="font-size: 2em; color: #ddd;"></i>
-        <span class="student-name">${s.name}</span>
-        <span class="student-class">Lớp: ${s.class}</span>
-      `;
-      
-      if (!isPaid) {
-        card.onclick = () => openModal(s);
-      } else {
-        card.onclick = () => showNotification(`${s.name} đã đóng tiền rồi nhé!`);
-      }
-      
-      grid.appendChild(card);
-    });
-  }
-
-  // 4. Modal Logic
-  const modal = document.getElementById("qrModal");
-  const closeBtn = document.getElementsByClassName("close")[0];
-
-  function openModal(student) {
-    document.getElementById("modalName").innerText = student.name;
-    document.getElementById("modalFee").innerText = student.fee.toLocaleString("vi-VN");
-    document.getElementById("modalInfo").innerText = student.info;
-    document.getElementById("modalQR").src = student.qr;
-    
-    document.getElementById("downloadBtn").onclick = () => {
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-        if (isIOS) {
-            window.open(student.qr, "_blank");
-        } else {
-            downloadImage(student.qr, student.info);
-        }
-    };
-
-    modal.style.display = "block";
-  }
-
-  closeBtn.onclick = () => modal.style.display = "none";
-  window.onclick = (event) => { if (event.target == modal) modal.style.display = "none"; }
-
-  // 5. Download Logic
-  async function downloadImage(src, name) {
-    const resp = await fetch(src);
-    const blob = await resp.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = name + ".png";
-    a.click();
-  }
-
-  // 6. Thông báo
-  function showNotification(msg) {
-    const toast = document.getElementById("notification");
-    toast.innerText = msg;
-    toast.style.display = "block";
-    setTimeout(() => { toast.style.display = "none"; }, 5000);
-  }
-
-  // Khởi chạy & Tự động cập nhật mỗi 10 giây
-  fetchData();
-  setInterval(fetchData, 10000); 
+})();
 
 </script>
+
 </body>
 </html>
+```
