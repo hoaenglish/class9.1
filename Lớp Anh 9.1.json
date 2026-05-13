@@ -32,9 +32,9 @@
     {
       "name": "Khánh Linh",
       "class": "9A9",
-      "fee": 20000,
+      "fee": 10000,
       "info": "9A9KhanhLinh",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=20000&addInfo=9A9KhanhLinh&accountName=CHU%20DUC%20THANH"
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A9KhanhLinh&accountName=CHU%20DUC%20THANH"
     }
   ]
 }
