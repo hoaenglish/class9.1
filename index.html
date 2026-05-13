@@ -368,12 +368,17 @@ const openedStudents = new Set();
 
 async function loadData(){
 
-  const url = JSON_FILE + "?v=" + Date.now();
+  const url =
+    encodeURI(JSON_FILE) +
+    "?v=" + Date.now();
 
   const res = await fetch(url);
 
   if(!res.ok){
-    throw new Error("Không tải được JSON");
+    throw new Error(
+      "Không tải được JSON: " +
+      res.status
+    );
   }
 
   return await res.json();
