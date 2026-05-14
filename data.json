@@ -1,835 +1,342 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Học phí</title>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-
-:root{
-  --blue:#2563eb;
-  --blue-dark:#1d4ed8;
-  --green:#16a34a;
-  --green-bg:#f0fdf4;
-  --green-border:#86efac;
-  --amber:#d97706;
-  --amber-bg:#fffbeb;
-  --amber-border:#fcd34d;
-  --red:#dc2626;
-  --slate-50:#f8fafc;
-  --slate-100:#f1f5f9;
-  --slate-200:#e2e8f0;
-  --slate-400:#94a3b8;
-  --slate-500:#64748b;
-  --slate-700:#334155;
-  --slate-900:#0f172a;
-  --radius:14px;
-  --radius-sm:10px;
-  --shadow-sm:0 1px 3px rgba(0,0,0,0.08);
-  --shadow-md:0 4px 16px rgba(0,0,0,0.1);
-}
-
-body{
-  background:var(--slate-100);
-  font-family:'Be Vietnam Pro',sans-serif;
-  color:var(--slate-900);
-  min-height:100vh;
-}
-
-/* ── Layout ── */
-.container{
-  width:100%;
-  max-width:680px;
-  margin:auto;
-  padding:14px 12px 40px;
-}
-
-/* ── Hero ── */
-.hero{
-  background:var(--blue);
-  color:#fff;
-  border-radius:20px;
-  padding:20px 18px 16px;
-  margin-bottom:14px;
-  box-shadow:0 8px 24px rgba(37,99,235,0.28);
-}
-
-.hero h1{
-  font-size:22px;
-  font-weight:700;
-  text-align:center;
-  line-height:1.3;
-}
-
-.hero-meta{
-  text-align:center;
-  font-size:13px;
-  opacity:0.82;
-  margin-top:3px;
-}
-
-/* ── Stats row ── */
-.stats{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:8px;
-  margin-top:14px;
-}
-
-.stat{
-  background:rgba(255,255,255,0.15);
-  border-radius:12px;
-  padding:10px 8px;
-  text-align:center;
-  backdrop-filter:blur(4px);
-}
-
-.stat-num{
-  font-size:20px;
-  font-weight:700;
-  line-height:1;
-}
-
-.stat-label{
-  font-size:11px;
-  opacity:0.82;
-  margin-top:3px;
-}
-
-/* ── Filters ── */
-.filters{
-  display:flex;
-  justify-content:center;
-  gap:6px;
-  margin-top:14px;
-  flex-wrap:wrap;
-}
-
-.filter-btn{
-  border:none;
-  border-radius:50px;
-  padding:7px 16px;
-  font-size:13px;
-  font-weight:600;
-  cursor:pointer;
-  font-family:inherit;
-  transition:background 0.15s,color 0.15s,transform 0.1s;
-  background:rgba(255,255,255,0.2);
-  color:#fff;
-}
-
-.filter-btn:active{transform:scale(0.97)}
-
-.filter-btn.active{
-  background:#fff;
-  color:var(--blue);
-}
-
-/* ── Search ── */
-.search-wrap{
-  position:relative;
-  margin-top:12px;
-}
-
-.search-wrap svg{
-  position:absolute;
-  left:12px;
-  top:50%;
-  transform:translateY(-50%);
-  opacity:0.5;
-  pointer-events:none;
-}
-
-.search-wrap input{
-  width:100%;
-  border:none;
-  outline:none;
-  border-radius:12px;
-  padding:11px 14px 11px 38px;
-  font-size:15px;
-  font-family:inherit;
-  background:rgba(255,255,255,0.92);
-  color:var(--slate-900);
-}
-
-.search-wrap input::placeholder{color:var(--slate-400)}
-
-/* ── List ── */
-.student-list{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-
-/* ── Empty ── */
-.empty{
-  text-align:center;
-  padding:48px 0;
-  color:var(--slate-500);
-}
-
-.empty-icon{
-  font-size:40px;
-  margin-bottom:10px;
-  opacity:0.35;
-}
-
-.empty p{font-size:15px;font-weight:500}
-.empty small{font-size:13px;opacity:0.7;margin-top:4px;display:block}
-
-/* ── Card ── */
-.card{
-  background:#fff;
-  border-radius:var(--radius);
-  overflow:hidden;
-  border:1.5px solid var(--slate-200);
-  box-shadow:var(--shadow-sm);
-  transition:opacity 0.2s,transform 0.2s,box-shadow 0.2s;
-  will-change:opacity,transform;
-}
-
-.card.paid{
-  background:var(--green-bg);
-  border-color:var(--green-border);
-}
-
-.card.unpaid{
-  border-left:4px solid var(--amber);
-}
-
-.card.dim{
-  opacity:0.3;
-  transform:scale(0.985);
-}
-
-.card.active{
-  box-shadow:0 8px 28px rgba(37,99,235,0.16);
-  border-color:#93c5fd;
-}
-
-/* ── Card header ── */
-.card-header{
-  padding:14px 16px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  cursor:pointer;
-  -webkit-tap-highlight-color:transparent;
-  user-select:none;
-}
-
-.card-header:active{background:rgba(0,0,0,0.03)}
-
-.card-left{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  min-width:0;
-  flex:1;
-}
-
-/* avatar circle */
-.avatar{
-  width:36px;
-  height:36px;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:13px;
-  font-weight:700;
-  flex-shrink:0;
-  background:#dbeafe;
-  color:#1d4ed8;
-}
-
-.paid .avatar{
-  background:#dcfce7;
-  color:#15803d;
-}
-
-.name-wrap{min-width:0}
-
-.student-name{
-  font-size:15px;
-  font-weight:600;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-
-.student-class{
-  font-size:12px;
-  color:var(--slate-500);
-  margin-top:1px;
-}
-
-.amount{
-  font-size:15px;
-  font-weight:700;
-  color:var(--red);
-  flex-shrink:0;
-  white-space:nowrap;
-}
-
-.paid .amount{
-  color:var(--green);
-  display:flex;
-  align-items:center;
-  gap:4px;
-}
-
-.chevron{
-  color:var(--slate-400);
-  flex-shrink:0;
-  transition:transform 0.25s;
-}
-
-.card.active .chevron{transform:rotate(180deg)}
-.paid .chevron{display:none}
-
-/* ── Expand ── */
-.expand{
-  max-height:0;
-  overflow:hidden;
-  transition:max-height 0.32s ease;
-}
-
-.expand-inner{
-  padding:0 16px 16px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-/* ── Info item ── */
-.info-item{
-  background:var(--slate-50);
-  border:1px solid var(--slate-200);
-  border-radius:var(--radius-sm);
-  padding:10px 12px;
-}
-
-.info-label{
-  font-size:11px;
-  color:var(--slate-500);
-  font-weight:500;
-  text-transform:uppercase;
-  letter-spacing:0.04em;
-  margin-bottom:6px;
-}
-
-.info-row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-}
-
-.info-value{
-  font-size:14px;
-  font-weight:600;
-  word-break:break-all;
-  line-height:1.4;
-}
-
-/* ── Buttons ── */
-.btn{
-  border:none;
-  border-radius:8px;
-  padding:7px 12px;
-  font-size:13px;
-  font-weight:600;
-  cursor:pointer;
-  font-family:inherit;
-  flex-shrink:0;
-  transition:opacity 0.15s,transform 0.1s;
-}
-
-.btn:active{transform:scale(0.96);opacity:0.85}
-
-.btn-blue{background:var(--blue);color:#fff}
-.btn-full{width:100%;padding:12px;font-size:15px;border-radius:12px;margin-top:4px}
-
-/* ── QR ── */
-.qr-wrap img{
-  width:100%;
-  border-radius:12px;
-  display:block;
-  background:var(--slate-200);
-  min-height:160px;
-  transition:opacity 0.2s;
-}
-
-.qr-wrap img.loading{opacity:0}
-.qr-wrap img.ready{opacity:1}
-
-@keyframes shimmer{
-  0%{background-position:-400px 0}
-  100%{background-position:400px 0}
-}
-
-.qr-skeleton{
-  width:100%;
-  aspect-ratio:1;
-  border-radius:12px;
-  background:linear-gradient(90deg,#e2e8f0 25%,#f1f5f9 50%,#e2e8f0 75%);
-  background-size:800px 100%;
-  animation:shimmer 1.2s infinite linear;
-  display:none;
-}
-
-.qr-wrap.loading-state .qr-skeleton{display:block}
-.qr-wrap.loading-state img{display:none}
-
-/* ── Toast ── */
-.toast{
-  position:fixed;
-  top:16px;
-  left:50%;
-  transform:translateX(-50%) translateY(-8px);
-  background:var(--slate-900);
-  color:#fff;
-  padding:10px 18px;
-  border-radius:50px;
-  z-index:9999;
-  font-size:13px;
-  font-weight:600;
-  pointer-events:none;
-  opacity:0;
-  transition:opacity 0.2s,transform 0.2s;
-  white-space:nowrap;
-  max-width:90vw;
-}
-
-.toast.show{
-  opacity:1;
-  transform:translateX(-50%) translateY(0);
-}
-
-@media(min-width:520px){
-  .expand-inner{flex-direction:row;flex-wrap:wrap}
-  .expand-inner > *{flex:1;min-width:220px}
-  .qr-wrap{min-width:unset;flex:0 0 200px}
-  .expand-inner .info-box{flex:1}
-}
-</style>
-</head>
-
-<body>
-<div class="container">
-
-  <div class="hero">
-    <h1 id="title">Học phí</h1>
-    <div class="hero-meta" id="monthText"></div>
-
-    <div class="stats">
-      <div class="stat">
-        <div class="stat-num" id="statTotal">—</div>
-        <div class="stat-label">Tổng HS</div>
-      </div>
-      <div class="stat">
-        <div class="stat-num" id="statPaid">—</div>
-        <div class="stat-label">Đã đóng</div>
-      </div>
-      <div class="stat">
-        <div class="stat-num" id="statUnpaid">—</div>
-        <div class="stat-label">Chưa đóng</div>
-      </div>
-    </div>
-
-    <div class="filters" id="filterGroup">
-      <button class="filter-btn" data-filter="all">Tất cả</button>
-      <button class="filter-btn" data-filter="paid">Đã đóng</button>
-      <button class="filter-btn active" data-filter="unpaid">Chưa đóng</button>
-    </div>
-
-    <div class="search-wrap">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-      </svg>
-      <input id="searchInput" type="text" placeholder="Tìm học sinh..." autocomplete="off" autocorrect="off" spellcheck="false">
-    </div>
-  </div>
-
-  <div class="student-list" id="studentList"></div>
-</div>
-
-<div id="toast" class="toast"></div>
-
-<script>
-const JSON_FILE = "data.json";
-
-let currentData = null;
-let currentMap = new Map();
-let cardMap = new Map();
-let pollTimer = null;
-let lastModified = null;
-let activeInfo = null;
-let currentFilter = 'unpaid';
-let currentSearch = '';
-let toastTimer = null;
-
-// ── Helpers ──
-
-function initials(name) {
-  return name.trim().split(/\s+/).slice(-2).map(w => w[0]).join('').toUpperCase();
-}
-
-function fmtMoney(n) {
-  return Number(n).toLocaleString('vi-VN') + 'đ';
-}
-
-// ── QR Preload ──
-
-const qrCache = new Set();
-
-function preloadAllQR(data) {
-  // Delay start slightly so render/paint gets priority
-  const urls = data.students
-    .filter(s => s.fee > 0 && s.qr && !qrCache.has(s.qr))
-    .map(s => s.qr);
-
-  if (!urls.length) return;
-
-  const BATCH = 5;
-  let i = 0;
-
-  function loadBatch() {
-    const batch = urls.slice(i, i + BATCH);
-    batch.forEach(url => {
-      const img = new Image();
-      img.onload = () => qrCache.add(url);
-      img.src = url;
-    });
-    i += BATCH;
-    if (i < urls.length) setTimeout(loadBatch, 250);
-  }
-
-  // Start after a short idle window
-  setTimeout(loadBatch, 400);
-}
-
-
-
-async function loadData() {
-  try {
-    const res = await fetch(JSON_FILE + '?v=' + Date.now());
-    if (!res.ok) return null;
-    const json = await res.json();
-    return Array.isArray(json) ? { students: json } : json;
-  } catch { return null; }
-}
-
-async function checkModified() {
-  try {
-    const res = await fetch(JSON_FILE, { method: 'HEAD', cache: 'no-store' });
-    const m = res.headers.get('last-modified');
-    if (!m) return true;
-    if (lastModified === null) { lastModified = m; return true; }
-    if (lastModified !== m) { lastModified = m; return true; }
-    return false;
-  } catch { return false; }
-}
-
-// ── Build map ──
-
-function buildMap(data) {
-  currentMap.clear();
-  data.students.forEach(s => currentMap.set(s.info, s));
-}
-
-// ── Stats ──
-
-function updateStats(data) {
-  const total = data.students.length;
-  const paid = data.students.filter(s => s.fee <= 0).length;
-  document.getElementById('statTotal').textContent = total;
-  document.getElementById('statPaid').textContent = paid;
-  document.getElementById('statUnpaid').textContent = total - paid;
-}
-
-// ── Render ──
-
-function render(data) {
-  currentData = data;
-  buildMap(data);
-
-  document.getElementById('title').textContent = data.title || 'Học phí';
-  document.getElementById('monthText').textContent = data.month || '';
-  updateStats(data);
-
-  const list = document.getElementById('studentList');
-  list.innerHTML = '';
-  cardMap.clear();
-
-  const search = currentSearch.toLowerCase();
-
-  const filtered = data.students.filter(s => {
-    const isPaid = s.fee <= 0;
-    if (currentFilter === 'paid' && !isPaid) return false;
-    if (currentFilter === 'unpaid' && isPaid) return false;
-    const fullName = `${s.class} ${s.name}`.toLowerCase();
-    if (search && !fullName.includes(search)) return false;
-    return true;
-  });
-
-  if (filtered.length === 0) {
-    list.innerHTML = `
-      <div class="empty">
-        <div class="empty-icon">🔍</div>
-        <p>Không có kết quả</p>
-        <small>Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</small>
-      </div>`;
-    return;
-  }
-
-  const frag = document.createDocumentFragment();
-
-  filtered.forEach((s, idx) => {
-    const isPaid = s.fee <= 0;
-    const card = document.createElement('div');
-    card.className = `card ${isPaid ? 'paid' : 'unpaid'}`;
-    card.dataset.info = s.info;
-
-    card.innerHTML = `
-      <div class="card-header" role="button" aria-expanded="false">
-        <div class="card-left">
-          <div class="avatar">${initials(s.name)}</div>
-          <div class="name-wrap">
-            <div class="student-name">${s.name}</div>
-            <div class="student-class">${s.class}</div>
-          </div>
-        </div>
-        <div class="amount">
-          ${isPaid
-            ? '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Đã đóng'
-            : fmtMoney(s.fee)}
-        </div>
-        <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-      </div>
-      <div class="expand">
-        <div class="expand-inner">
-          <div class="info-box" style="display:flex;flex-direction:column;gap:8px;">
-            <div class="info-item">
-              <div class="info-label">Nội dung chuyển khoản</div>
-              <div class="info-row">
-                <div class="info-value">${s.info}</div>
-                <button class="btn btn-blue" data-copy="${s.info}">Copy</button>
-              </div>
-            </div>
-            <div class="info-item">
-              <div class="info-label">Số tài khoản</div>
-              <div class="info-row">
-                <div class="info-value">${s.bank.account}</div>
-                <button class="btn btn-blue" data-copy="${s.bank.account}">Copy</button>
-              </div>
-            </div>
-          </div>
-          <div class="qr-wrap">
-            <div class="qr-skeleton"></div>
-            <img src="${s.qr}" alt="QR chuyển khoản ${s.name}" class="qr-img" decoding="async">
-            <button class="btn btn-blue btn-full" data-qr="${s.qr}" data-qr-name="${s.info}">Lưu mã QR</button>
-          </div>
-        </div>
-      </div>`;
-
-    // delegated events on this card
-    card.addEventListener('click', e => {
-      const copyTarget = e.target.closest('[data-copy]');
-      if (copyTarget) { e.stopPropagation(); copyText(copyTarget.dataset.copy); return; }
-      const qrBtn = e.target.closest('[data-qr]');
-      if (qrBtn) { e.stopPropagation(); downloadQR(qrBtn.dataset.qr, qrBtn.dataset.qrName); return; }
-      if (e.target.closest('.card-header')) toggleExpand(card, s.info, isPaid);
-    });
-
-    frag.appendChild(card);
-    cardMap.set(s.info, card);
-  });
-
-  list.appendChild(frag);
-
-  // Preload QR images for unpaid students in the background
-  preloadAllQR(data);
-}
-
-// ── Expand / collapse ──
-
-function toggleExpand(card, info, isPaid) {
-  if (isPaid) return;
-
-  const expand = card.querySelector('.expand');
-  const header = card.querySelector('.card-header');
-  const isOpen = expand.style.maxHeight && expand.style.maxHeight !== '0px';
-
-  // collapse all
-  document.querySelectorAll('.expand').forEach(el => el.style.maxHeight = '0px');
-  document.querySelectorAll('.card-header').forEach(h => h.setAttribute('aria-expanded', 'false'));
-  document.querySelectorAll('.card').forEach(c => c.classList.remove('active', 'dim'));
-  stopPolling();
-
-  if (isOpen) { activeInfo = null; return; }
-
-  // open this one — force layout then animate
-  const qrImg = card.querySelector('.qr-img');
-  const qrWrap = card.querySelector('.qr-wrap');
-
-  if (qrImg && !qrImg.complete) {
-    // Image not ready yet — show skeleton while waiting
-    qrWrap.classList.add('loading-state');
-    qrImg.onload = qrImg.onerror = () => {
-      qrWrap.classList.remove('loading-state');
-      // recalc height now that image has dimensions
-      if (expand.style.maxHeight !== '0px') {
-        expand.style.maxHeight = expand.scrollHeight + 'px';
+{
+  "title": "Học phí Lớp Anh 9.1",
+  "month": "(Tháng 04/2026)",
+  "students": [
+    {
+      "name": "Tuấn Phong",
+      "class": "9A1",
+      "fee": 0,
+      "info": "9A1TuanPhong",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A1TuanPhong&accountName=CHU%20DUC%20THANH",
+      "bank": {
+        "id": "OCB",
+        "account": "CASSMSHOA91",
+        "name": "CHU DUC THANH"
       }
-    };
-  }
-
-  expand.style.maxHeight = expand.scrollHeight + 'px';
-  header.setAttribute('aria-expanded', 'true');
-  activeInfo = info;
-  card.classList.add('active');
-  document.querySelectorAll('.card').forEach(c => { if (c !== card) c.classList.add('dim'); });
-  startPolling();
+    },
+    {
+      "name": "Bình Minh",
+      "class": "9A1",
+      "fee": 0,
+      "info": "9A1BinhMinh",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A1BinhMinh&accountName=CHU%20DUC%20THANH",
+      "bank": {
+        "id": "OCB",
+        "account": "CASSMSHOA91",
+        "name": "CHU DUC THANH"
+      }
+    },
+    {
+      "name": "Kiều Trang",
+      "class": "9A1",
+      "fee": 0,
+      "info": "9A1KieuTrang",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A1KieuTrang&accountName=CHU%20DUC%20THANH",
+      "bank": {
+        "id": "OCB",
+        "account": "CASSMSHOA91",
+        "name": "CHU DUC THANH"
+      }
+    },
+    {
+      "name": "Tiến Dũng",
+      "class": "9A2",
+      "fee": 420000,
+      "info": "9A2TienDung",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=420000&addInfo=9A2TienDung&accountName=CHU%20DUC%20THANH",
+      "bank": {
+        "id": "OCB",
+        "account": "CASSMSHOA91",
+        "name": "CHU DUC THANH"
+      }
+    },
+    {
+      "name": "Ngân",
+      "class": "9A2",
+      "fee": 0,
+      "info": "9A2Ngan",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A2Ngan&accountName=CHU%20DUC%20THANH",
+      "bank": {
+        "id": "OCB",
+        "account": "CASSMSHOA91",
+        "name": "CHU DUC THANH"
+      }
+    },
+    {
+      "name": "Bảo",
+      "class": "9A2",
+      "fee": 420000,
+      "info": "9A2Bao",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=420000&addInfo=9A2Bao&accountName=CHU%20DUC%20THANH",
+      "bank": {
+        "id": "OCB",
+        "account": "CASSMSHOA91",
+        "name": "CHU DUC THANH"
+      }
+    },
+    {
+      "name": "Lâm Bình",
+      "class": "9A2",
+      "fee": 0,
+      "info": "9A2LamBinh",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A2LamBinh&accountName=CHU%20DUC%20THANH",
+      "bank": {
+        "id": "OCB",
+        "account": "CASSMSHOA91",
+        "name": "CHU DUC THANH"
+      }
+    },
+    {
+      "name": "An Khánh",
+      "class": "9A9",
+      "fee": 0,
+      "info": "9A9AnKhanh",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9AnKhanh&accountName=CHU%20DUC%20THANH",
+      "bank": {
+        "id": "OCB",
+        "account": "CASSMSHOA91",
+        "name": "CHU DUC THANH"
+      }
+    },
+    {
+      "name": "Hoàng Thy",
+      "class": "9A9",
+      "fee": 0,
+      "info": "9A9HoangThy",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9HoangThy&accountName=CHU%20DUC%20THANH",
+      "bank": {
+        "id": "OCB",
+        "account": "CASSMSHOA91",
+        "name": "CHU DUC THANH"
+      }
+    },
+    {
+      "name": "Gia Bảo",
+      "class": "9A9",
+      "fee": 1380000,
+      "info": "9A9GiaBao",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=1380000&addInfo=9A9GiaBao&accountName=CHU%20DUC%20THANH",
+      "bank": {
+        "id": "OCB",
+        "account": "CASSMSHOA91",
+        "name": "CHU DUC THANH"
+      }
+    },
+    {
+      "name": "Bảo Quyên",
+      "class": "9A9",
+      "fee": 0,
+      "info": "9A9BaoQuyen",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9BaoQuyen&accountName=CHU%20DUC%20THANH",
+      "bank": {
+        "id": "OCB",
+        "account": "CASSMSHOA91",
+        "name": "CHU DUC THANH"
+      }
+    },
+    {
+      "name": "Tùng Dương",
+      "class": "9A9",
+      "fee": 0,
+      "info": "9A9TungDuong",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9TungDuong&accountName=CHU%20DUC%20THANH",
+      "bank": {
+        "id": "OCB",
+        "account": "CASSMSHOA91",
+        "name": "CHU DUC THANH"
+      }
+    },
+    {
+      "name": "Khôi Nguyên",
+      "class": "9A9",
+      "fee": 0,
+      "info": "9A9KhoiNguyen",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9KhoiNguyen&accountName=CHU%20DUC%20THANH",
+      "bank": {
+        "id": "OCB",
+        "account": "CASSMSHOA91",
+        "name": "CHU DUC THANH"
+      }
+    },
+    {
+      "name": "Minh Dũng",
+      "class": "9A9",
+      "fee": 360000,
+      "info": "9A9MinhDung",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=360000&addInfo=9A9MinhDung&accountName=CHU%20DUC%20THANH",
+      "bank": {
+        "id": "OCB",
+        "account": "CASSMSHOA91",
+        "name": "CHU DUC THANH"
+      }
+    },
+    {
+      "name": "Giang",
+      "class": "9A9",
+      "fee": 0,
+      "info": "9A9Giang",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9Giang&accountName=CHU%20DUC%20THANH",
+      "bank": {
+        "id": "OCB",
+        "account": "CASSMSHOA91",
+        "name": "CHU DUC THANH"
+      }
+    },
+    {
+      "name": "Mạnh Hà",
+      "class": "9A9",
+      "fee": 0,
+      "info": "9A9ManhHa",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9ManhHa&accountName=CHU%20DUC%20THANH",
+      "bank": {
+        "id": "OCB",
+        "account": "CASSMSHOA91",
+        "name": "CHU DUC THANH"
+      }
+    },
+    {
+      "name": "Nhật Minh",
+      "class": "9A9",
+      "fee": 0,
+      "info": "9A9NhatMinh",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9NhatMinh&accountName=CHU%20DUC%20THANH",
+      "bank": {
+        "id": "OCB",
+        "account": "CASSMSHOA91",
+        "name": "CHU DUC THANH"
+      }
+    },
+    {
+      "name": "Đức Quyền",
+      "class": "9A9",
+      "fee": 0,
+      "info": "9A9DucQuyen",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9DucQuyen&accountName=CHU%20DUC%20THANH",
+      "bank": {
+        "id": "OCB",
+        "account": "CASSMSHOA91",
+        "name": "CHU DUC THANH"
+      }
+    },
+    {
+      "name": "Lê Thy",
+      "class": "9A9",
+      "fee": 0,
+      "info": "9A9LeThy",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9LeThy&accountName=CHU%20DUC%20THANH",
+      "bank": {
+        "id": "OCB",
+        "account": "CASSMSHOA91",
+        "name": "CHU DUC THANH"
+      }
+    },
+    {
+      "name": "Châu Băng",
+      "class": "9A9",
+      "fee": 0,
+      "info": "9A9ChauBang",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9ChauBang&accountName=CHU%20DUC%20THANH",
+      "bank": {
+        "id": "OCB",
+        "account": "CASSMSHOA91",
+        "name": "CHU DUC THANH"
+      }
+    },
+    {
+      "name": "Phong",
+      "class": "9A9",
+      "fee": 0,
+      "info": "9A9Phong",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9Phong&accountName=CHU%20DUC%20THANH",
+      "bank": {
+        "id": "OCB",
+        "account": "CASSMSHOA91",
+        "name": "CHU DUC THANH"
+      }
+    },
+    {
+      "name": "Kim Anh",
+      "class": "9A9",
+      "fee": 0,
+      "info": "9A9KimAnh",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9KimAnh&accountName=CHU%20DUC%20THANH",
+      "bank": {
+        "id": "OCB",
+        "account": "CASSMSHOA91",
+        "name": "CHU DUC THANH"
+      }
+    },
+    {
+      "name": "Minh Hải",
+      "class": "9A9",
+      "fee": 0,
+      "info": "9A9MinhHai",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9MinhHai&accountName=CHU%20DUC%20THANH",
+      "bank": {
+        "id": "OCB",
+        "account": "CASSMSHOA91",
+        "name": "CHU DUC THANH"
+      }
+    },
+    {
+      "name": "Loan",
+      "class": "9A9",
+      "fee": 0,
+      "info": "9A9Loan",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9Loan&accountName=CHU%20DUC%20THANH",
+      "bank": {
+        "id": "OCB",
+        "account": "CASSMSHOA91",
+        "name": "CHU DUC THANH"
+      }
+    },
+    {
+      "name": "Thái",
+      "class": "9A9",
+      "fee": 0,
+      "info": "9A9Thai",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9Thai&accountName=CHU%20DUC%20THANH",
+      "bank": {
+        "id": "OCB",
+        "account": "CASSMSHOA91",
+        "name": "CHU DUC THANH"
+      }
+    },
+    {
+      "name": "Tuấn Hưng",
+      "class": "9A9",
+      "fee": 0,
+      "info": "9A9TuanHung",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9TuanHung&accountName=CHU%20DUC%20THANH",
+      "bank": {
+        "id": "OCB",
+        "account": "CASSMSHOA91",
+        "name": "CHU DUC THANH"
+      }
+    },
+    {
+      "name": "Thu Thuỷ",
+      "class": "9A9",
+      "fee": 0,
+      "info": "9A9ThuThuy",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9ThuThuy&accountName=CHU%20DUC%20THANH",
+      "bank": {
+        "id": "OCB",
+        "account": "CASSMSHOA91",
+        "name": "CHU DUC THANH"
+      }
+    },
+    {
+      "name": "Khánh Linh",
+      "class": "9A9",
+      "fee": 20000,
+      "info": "9A9KhanhLinh",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=20000&addInfo=9A9KhanhLinh&accountName=CHU%20DUC%20THANH",
+      "bank": {
+        "id": "OCB",
+        "account": "CASSMSHOA91",
+        "name": "CHU DUC THANH"
+      }
+    }
+  ]
 }
-
-// ── Polling ──
-
-async function polling() {
-  if (!activeInfo) return;
-  const changed = await checkModified();
-  if (!changed) return;
-  const newData = await loadData();
-  if (!newData) return;
-  buildMap(newData);
-  const latest = currentMap.get(activeInfo);
-  if (latest && latest.fee <= 0) {
-    updatePaid(latest);
-    showToast('🎉 ' + latest.name + ' đã đóng học phí!');
-    stopPolling();
-    currentData = newData;
-    updateStats(newData);
-  }
-}
-
-function startPolling() {
-  if (pollTimer) return;
-  pollTimer = setInterval(polling, 1500);
-}
-
-function stopPolling() {
-  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-}
-
-// ── Update paid in-place ──
-
-function updatePaid(student) {
-  const card = cardMap.get(student.info);
-  if (!card) return;
-
-  card.classList.remove('unpaid', 'active');
-  card.classList.add('paid');
-
-  const amt = card.querySelector('.amount');
-  amt.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Đã đóng';
-
-  const avatar = card.querySelector('.avatar');
-  if (avatar) { avatar.style.background = '#dcfce7'; avatar.style.color = '#15803d'; }
-
-  card.querySelector('.expand').style.maxHeight = '0px';
-  document.querySelectorAll('.card').forEach(c => c.classList.remove('dim'));
-  activeInfo = null;
-}
-
-// ── Copy ──
-
-async function copyText(text) {
-  try {
-    await navigator.clipboard.writeText(text);
-    showToast('✓ Đã copy');
-  } catch {
-    // fallback
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.cssText = 'position:fixed;opacity:0';
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    showToast('✓ Đã copy');
-  }
-}
-
-// ── Download QR ──
-
-async function downloadQR(url, name) {
-  if (/iPad|iPhone|iPod/.test(navigator.userAgent)) { window.open(url, '_blank'); return; }
-  try {
-    const res = await fetch(url);
-    const blob = await res.blob();
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = name + '.png';
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-  } catch { window.open(url, '_blank'); }
-}
-
-// ── Toast ──
-
-function showToast(text) {
-  const t = document.getElementById('toast');
-  t.textContent = text;
-  t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
-}
-
-// ── Filter buttons ──
-
-document.getElementById('filterGroup').addEventListener('click', e => {
-  const btn = e.target.closest('.filter-btn');
-  if (!btn) return;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  currentFilter = btn.dataset.filter;
-  activeInfo = null;
-  stopPolling();
-  if (currentData) render(currentData);
-});
-
-// ── Search ──
-
-let searchDebounce = null;
-document.getElementById('searchInput').addEventListener('input', e => {
-  clearTimeout(searchDebounce);
-  searchDebounce = setTimeout(() => {
-    currentSearch = e.target.value;
-    if (currentData) render(currentData);
-  }, 160);
-});
-
-// ── Visibility ──
-
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) { stopPolling(); }
-  else if (activeInfo) { startPolling(); }
-});
-
-// ── Init ──
-
-(async () => {
-  const data = await loadData();
-  if (data) render(data);
-})();
-</script>
-</body>
-</html>
