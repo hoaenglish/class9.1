@@ -139,7 +139,7 @@ body {
 // ======================================================
 // CONFIG & GLOBAL
 // ======================================================
-const JSON_FILE = "data.json"; // Đã đổi theo yêu cầu của bạn
+const JSON_FILE = "data.json";
 let currentData = null;
 let lastOpenedInfo = localStorage.getItem('lastOpenedInfo') || null;
 let pollTimer = null;
@@ -158,10 +158,9 @@ async function loadData() {
 }
 
 // ======================================================
-// RENDER (CẢI TIẾN: KHÔNG ĐÓNG QR ĐANG MỞ)
+// RENDER (CẢI TIẾN: CHỈ VẼ LẠI KHI CẦN THIẾT)
 // ======================================================
 function render(newData) {
-    // Cập nhật Title từ JSON
     if (newData.title) {
         document.getElementById("title").innerText = newData.title;
         document.title = newData.title;
@@ -171,13 +170,9 @@ function render(newData) {
     const filter = document.querySelector('input[name="filter"]:checked').value;
     const search = document.getElementById("searchInput").value.toLowerCase();
 
-    // Lưu lại ID của các vùng đang mở để sau khi render lại thì mở lại đúng cái đó
-    const openedIds = [];
-    document.querySelectorAll('.expand').forEach(el => {
-        if (el.style.maxHeight && el.style.maxHeight !== "0px") {
-            openedIds.push(el.id);
-        }
-    });
+    // Nếu đang mở QR, chúng ta KHÔNG vẽ lại danh sách để tránh đơ máy
+    // Chúng ta sẽ cập nhật trạng thái bằng code xử lý riêng ở hàm check
+    if (lastOpenedInfo && currentData) return;
 
     list.innerHTML = "";
     newData.students.forEach((s, idx) => {
@@ -190,7 +185,8 @@ function render(newData) {
 
         const card = document.createElement("div");
         card.className = `card ${isPaid ? 'paid' : 'unpaid'}`;
-        const expandId = `expand-${idx}`;
+        card.id = `card-idx-${idx}`;
+        card.setAttribute('data-info', s.info);
         
         card.innerHTML = `
             <div class="card-header" onclick="toggleExpand(${idx}, '${s.info}', ${isPaid})">
@@ -200,7 +196,7 @@ function render(newData) {
                 </div>
                 <div class="amount">${isPaid ? '✓' : Number(s.fee).toLocaleString() + 'đ'}</div>
             </div>
-            <div class="expand" id="${expandId}">
+            <div class="expand" id="expand-${idx}">
                 <div class="expand-inner">
                     <div class="details-grid">
                         <div><div class="label">Nội dung</div><div class="val">${s.info}</div></div>
@@ -208,77 +204,69 @@ function render(newData) {
                     </div>
                     <div class="qr-container">
                         <img src="${s.qr}" alt="QR">
-                        <button class="btn-save" onclick="downloadQR('${s.qr}', '${s.info}')">Lưu mã QR</button>
+                        <button class="btn-save" onclick="event.stopPropagation(); downloadQR('${s.qr}', '${s.info}')">Lưu mã QR</button>
                     </div>
                 </div>
             </div>
         `;
         list.appendChild(card);
-
-        // Nếu cái này đang mở trước khi render thì giữ nguyên trạng thái mở
-        if (openedIds.includes(expandId) && !isPaid) {
-            const el = card.querySelector('.expand');
-            el.style.maxHeight = "1000px"; // Mở lại ngay lập tức
-        }
     });
     currentData = newData;
 }
 
 // ======================================================
-// LOGIC CẬP NHẬT (POLLING)
+// LOGIC CẬP NHẬT 1S/LẦN (SMART UPDATE)
 // ======================================================
 async function startPolling() {
     if (pollTimer) return;
-    
     focusStartTime = Date.now();
-    console.log("Bắt đầu cập nhật 1s/lần...");
 
     pollTimer = setInterval(async () => {
-        // 1. Kiểm tra focus
-        if (document.hidden) { stopPolling(); return; }
-
-        // 2. Kiểm tra giới hạn 10 phút (600,000 ms)
-        if (Date.now() - focusStartTime > 600000) {
-            console.log("Quá 10 phút focus, dừng cập nhật nhanh.");
+        if (document.hidden || (Date.now() - focusStartTime > 600000)) {
             stopPolling();
-            return;
-        }
-
-        // 3. Kiểm tra xem có đang mở QR của học sinh chưa đóng tiền không
-        if (!lastOpenedInfo) {
-            // Nếu không mở cái nào, có thể giãn cách thời gian cập nhật hoặc dừng
             return;
         }
 
         const newData = await loadData();
         if (!newData) return;
 
-        const oldStudent = currentData?.students.find(x => x.info === lastOpenedInfo);
-        const newStudent = newData.students.find(x => x.info === lastOpenedInfo);
+        // Kiểm tra xem có học sinh nào vừa đóng tiền không
+        newData.students.forEach((newS) => {
+            const oldS = currentData?.students.find(x => x.info === newS.info);
+            
+            // Nếu phát hiện trạng thái thay đổi từ Chưa đóng -> Đã đóng
+            if (oldS && oldS.fee > 0 && newS.fee <= 0) {
+                
+                // 1. Nếu là học sinh đang mở QR, báo chuông ngay
+                if (newS.info === lastOpenedInfo) {
+                    showToast(`🎉 ${newS.name} đã hoàn thành học phí!`);
+                    // Đóng vùng QR lại vì đã đóng xong
+                    const openedExpand = document.querySelector('.expand[style*="max-height"][style*="px"]:not([style*="0px"])');
+                    if (openedExpand) openedExpand.style.maxHeight = "0px";
+                    lastOpenedInfo = null;
+                    localStorage.removeItem('lastOpenedInfo');
+                }
 
-        // Nếu học sinh vừa mở đã đóng tiền
-        if (oldStudent && newStudent && oldStudent.fee > 0 && newStudent.fee <= 0) {
-            showToast(`🎉 ${newStudent.name} đã hoàn thành học phí!`);
-            lastOpenedInfo = null;
-            localStorage.removeItem('lastOpenedInfo');
-            render(newData);
-            stopPolling(); // Đã đóng tiền xong thì không cần 1s/lần nữa
-        } else {
-            // Cập nhật dữ liệu ngầm để đảm bảo đồng bộ nhưng không làm phiền người dùng
-            render(newData);
-        }
+                // 2. Cập nhật "nóng" giao diện của thẻ đó mà không render lại cả list
+                const card = document.querySelector(`.card[data-info="${newS.info}"]`);
+                if (card) {
+                    card.classList.replace('unpaid', 'paid');
+                    card.querySelector('.amount').innerText = '✓';
+                    card.querySelector('.card-header').onclick = () => {}; // Khóa click mở QR
+                }
+            }
+        });
+
+        currentData = newData; // Cập nhật cache dữ liệu
     }, 1000);
 }
 
 function stopPolling() {
-    if (pollTimer) {
-        clearInterval(pollTimer);
-        pollTimer = null;
-    }
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
 }
 
 // ======================================================
-// EVENTS & INIT
+// INTERACTION
 // ======================================================
 window.toggleExpand = (idx, info, isPaid) => {
     if (isPaid) return;
@@ -286,12 +274,11 @@ window.toggleExpand = (idx, info, isPaid) => {
     const isOpen = el.style.maxHeight && el.style.maxHeight !== "0px";
 
     if (!isOpen) {
-        // Đóng các cái khác
         document.querySelectorAll('.expand').forEach(e => e.style.maxHeight = "0px");
         el.style.maxHeight = el.scrollHeight + "px";
         lastOpenedInfo = info;
         localStorage.setItem('lastOpenedInfo', info);
-        startPolling(); // Mở QR là bắt đầu kích hoạt 1s/lần
+        startPolling();
     } else {
         el.style.maxHeight = "0px";
         lastOpenedInfo = null;
@@ -299,20 +286,25 @@ window.toggleExpand = (idx, info, isPaid) => {
     }
 };
 
-window.onfocus = () => {
-    if (lastOpenedInfo) startPolling();
+// Đảm bảo các nút lọc vẫn hoạt động mượt mà
+document.querySelectorAll('input[name="filter"]').forEach(r => {
+    r.onchange = () => {
+        lastOpenedInfo = null; // Reset để render lại được danh sách theo lọc
+        render(currentData);
+    };
+});
+
+document.getElementById("searchInput").oninput = () => {
+    lastOpenedInfo = null;
+    render(currentData);
 };
 
-window.onblur = () => {
-    stopPolling();
-};
+window.onfocus = () => { if (lastOpenedInfo) startPolling(); };
+window.onblur = () => stopPolling();
 
-// Khởi tạo lần đầu
 (async () => {
     const data = await loadData();
     if (data) render(data);
-    
-    // Nếu khi load trang mà đang có học sinh mở dở từ trước, kích hoạt poll luôn
     if (lastOpenedInfo) startPolling();
 })();
 </script>
