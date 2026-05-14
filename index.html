@@ -136,47 +136,62 @@ body {
 <div id="toast" class="toast"></div>
 
 <script>
-const JSON_FILE = "data.json";
-const POLL_INTERVAL = 3000;
-
+// ======================================================
+// CONFIG & GLOBAL
+// ======================================================
+const JSON_FILE = "data.json"; // Đã đổi theo yêu cầu của bạn
 let currentData = null;
 let lastOpenedInfo = localStorage.getItem('lastOpenedInfo') || null;
+let pollTimer = null;
+let focusStartTime = null;
 
+// ======================================================
+// LOAD DATA
+// ======================================================
 async function loadData() {
     try {
         const res = await fetch(JSON_FILE + "?v=" + Date.now());
         if (!res.ok) return null;
         const json = await res.json();
-        // Xử lý cả 2 loại cấu trúc JSON (mảng hoặc object có field students)
         return Array.isArray(json) ? { students: json } : json;
     } catch (e) { return null; }
 }
 
-function showToast(msg) {
-    const t = document.getElementById("toast");
-    t.innerText = msg;
-    t.style.display = "block";
-    setTimeout(() => { t.style.display = "none"; }, 5000);
-}
+// ======================================================
+// RENDER (CẢI TIẾN: KHÔNG ĐÓNG QR ĐANG MỞ)
+// ======================================================
+function render(newData) {
+    // Cập nhật Title từ JSON
+    if (newData.title) {
+        document.getElementById("title").innerText = newData.title;
+        document.title = newData.title;
+    }
 
-function render() {
-    if (!currentData) return;
     const list = document.getElementById("studentList");
     const filter = document.querySelector('input[name="filter"]:checked').value;
     const search = document.getElementById("searchInput").value.toLowerCase();
 
+    // Lưu lại ID của các vùng đang mở để sau khi render lại thì mở lại đúng cái đó
+    const openedIds = [];
+    document.querySelectorAll('.expand').forEach(el => {
+        if (el.style.maxHeight && el.style.maxHeight !== "0px") {
+            openedIds.push(el.id);
+        }
+    });
+
     list.innerHTML = "";
-    currentData.students.forEach((s, idx) => {
+    newData.students.forEach((s, idx) => {
         const isPaid = s.fee <= 0;
         const fullName = `${s.class} - ${s.name}`;
 
-        // Filter logic
         if (filter === 'paid' && !isPaid) return;
         if (filter === 'unpaid' && isPaid) return;
         if (search && !fullName.toLowerCase().includes(search)) return;
 
         const card = document.createElement("div");
         card.className = `card ${isPaid ? 'paid' : 'unpaid'}`;
+        const expandId = `expand-${idx}`;
+        
         card.innerHTML = `
             <div class="card-header" onclick="toggleExpand(${idx}, '${s.info}', ${isPaid})">
                 <div class="name-area">
@@ -185,7 +200,7 @@ function render() {
                 </div>
                 <div class="amount">${isPaid ? '✓' : Number(s.fee).toLocaleString() + 'đ'}</div>
             </div>
-            <div class="expand" id="expand-${idx}">
+            <div class="expand" id="${expandId}">
                 <div class="expand-inner">
                     <div class="details-grid">
                         <div><div class="label">Nội dung</div><div class="val">${s.info}</div></div>
@@ -199,64 +214,106 @@ function render() {
             </div>
         `;
         list.appendChild(card);
+
+        // Nếu cái này đang mở trước khi render thì giữ nguyên trạng thái mở
+        if (openedIds.includes(expandId) && !isPaid) {
+            const el = card.querySelector('.expand');
+            el.style.maxHeight = "1000px"; // Mở lại ngay lập tức
+        }
     });
+    currentData = newData;
 }
 
+// ======================================================
+// LOGIC CẬP NHẬT (POLLING)
+// ======================================================
+async function startPolling() {
+    if (pollTimer) return;
+    
+    focusStartTime = Date.now();
+    console.log("Bắt đầu cập nhật 1s/lần...");
+
+    pollTimer = setInterval(async () => {
+        // 1. Kiểm tra focus
+        if (document.hidden) { stopPolling(); return; }
+
+        // 2. Kiểm tra giới hạn 10 phút (600,000 ms)
+        if (Date.now() - focusStartTime > 600000) {
+            console.log("Quá 10 phút focus, dừng cập nhật nhanh.");
+            stopPolling();
+            return;
+        }
+
+        // 3. Kiểm tra xem có đang mở QR của học sinh chưa đóng tiền không
+        if (!lastOpenedInfo) {
+            // Nếu không mở cái nào, có thể giãn cách thời gian cập nhật hoặc dừng
+            return;
+        }
+
+        const newData = await loadData();
+        if (!newData) return;
+
+        const oldStudent = currentData?.students.find(x => x.info === lastOpenedInfo);
+        const newStudent = newData.students.find(x => x.info === lastOpenedInfo);
+
+        // Nếu học sinh vừa mở đã đóng tiền
+        if (oldStudent && newStudent && oldStudent.fee > 0 && newStudent.fee <= 0) {
+            showToast(`🎉 ${newStudent.name} đã hoàn thành học phí!`);
+            lastOpenedInfo = null;
+            localStorage.removeItem('lastOpenedInfo');
+            render(newData);
+            stopPolling(); // Đã đóng tiền xong thì không cần 1s/lần nữa
+        } else {
+            // Cập nhật dữ liệu ngầm để đảm bảo đồng bộ nhưng không làm phiền người dùng
+            render(newData);
+        }
+    }, 1000);
+}
+
+function stopPolling() {
+    if (pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+    }
+}
+
+// ======================================================
+// EVENTS & INIT
+// ======================================================
 window.toggleExpand = (idx, info, isPaid) => {
     if (isPaid) return;
     const el = document.getElementById(`expand-${idx}`);
     const isOpen = el.style.maxHeight && el.style.maxHeight !== "0px";
 
-    // Đóng tất cả cái khác (tùy chọn, để gọn màn hình)
-    document.querySelectorAll('.expand').forEach(e => e.style.maxHeight = "0px");
-
     if (!isOpen) {
+        // Đóng các cái khác
+        document.querySelectorAll('.expand').forEach(e => e.style.maxHeight = "0px");
         el.style.maxHeight = el.scrollHeight + "px";
         lastOpenedInfo = info;
         localStorage.setItem('lastOpenedInfo', info);
+        startPolling(); // Mở QR là bắt đầu kích hoạt 1s/lần
+    } else {
+        el.style.maxHeight = "0px";
+        lastOpenedInfo = null;
+        localStorage.removeItem('lastOpenedInfo');
     }
 };
 
-window.downloadQR = async (url, name) => {
-    const res = await fetch(url);
-    const blob = await res.blob();
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = name + ".png";
-    a.click();
+window.onfocus = () => {
+    if (lastOpenedInfo) startPolling();
 };
 
-async function checkStatusOnFocus() {
-    const newData = await loadData();
-    if (!newData || !currentData) return;
+window.onblur = () => {
+    stopPolling();
+};
 
-    if (lastOpenedInfo) {
-        const oldStudent = currentData.students.find(x => x.info === lastOpenedInfo);
-        const newStudent = newData.students.find(x => x.info === lastOpenedInfo);
-
-        if (oldStudent && newStudent && oldStudent.fee > 0 && newStudent.fee <= 0) {
-            showToast(`🎉 Học sinh ${newStudent.name} đã hoàn thành học phí!`);
-            lastOpenedInfo = null;
-            localStorage.removeItem('lastOpenedInfo');
-        }
-    }
-    currentData = newData;
-    render();
-}
-
-// Events
-document.querySelectorAll('input[name="filter"]').forEach(r => r.onchange = render);
-document.getElementById("searchInput").oninput = render;
-window.onfocus = checkStatusOnFocus;
-
-// Init
+// Khởi tạo lần đầu
 (async () => {
-    currentData = await loadData();
-    render();
-    setInterval(async () => {
-        const d = await loadData();
-        if (d) { currentData = d; render(); }
-    }, 10000);
+    const data = await loadData();
+    if (data) render(data);
+    
+    // Nếu khi load trang mà đang có học sinh mở dở từ trước, kích hoạt poll luôn
+    if (lastOpenedInfo) startPolling();
 })();
 </script>
 </body>
