@@ -5,9 +5,9 @@
     {
       "name": "Tuấn Phong",
       "class": "9A1",
-      "fee": 0,
+      "fee": 10000,
       "info": "9A1TuanPhong",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A1TuanPhong&accountName=CHU%20DUC%20THANH",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A1TuanPhong&accountName=CHU%20DUC%20THANH",
       "bank": {
         "id": "OCB",
         "account": "CASSMSHOA91",
