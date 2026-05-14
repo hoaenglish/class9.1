@@ -17,9 +17,9 @@
     {
       "name": "Bình Minh",
       "class": "9A1",
-      "fee": 0,
+      "fee": 10000,
       "info": "9A1BinhMinh",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A1BinhMinh&accountName=CHU%20DUC%20THANH",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A1BinhMinh&accountName=CHU%20DUC%20THANH",
       "bank": {
         "id": "OCB",
         "account": "CASSMSHOA91",
@@ -29,9 +29,9 @@
     {
       "name": "Kiều Trang",
       "class": "9A1",
-      "fee": 0,
+      "fee": 10000,
       "info": "9A1KieuTrang",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A1KieuTrang&accountName=CHU%20DUC%20THANH",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A1KieuTrang&accountName=CHU%20DUC%20THANH",
       "bank": {
         "id": "OCB",
         "account": "CASSMSHOA91",
@@ -41,9 +41,9 @@
     {
       "name": "Tiến Dũng",
       "class": "9A2",
-      "fee": 420000,
+      "fee": 10000,
       "info": "9A2TienDung",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=420000&addInfo=9A2TienDung&accountName=CHU%20DUC%20THANH",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A2TienDung&accountName=CHU%20DUC%20THANH",
       "bank": {
         "id": "OCB",
         "account": "CASSMSHOA91",
@@ -53,9 +53,9 @@
     {
       "name": "Ngân",
       "class": "9A2",
-      "fee": 0,
+      "fee": 10000,
       "info": "9A2Ngan",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A2Ngan&accountName=CHU%20DUC%20THANH",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A2Ngan&accountName=CHU%20DUC%20THANH",
       "bank": {
         "id": "OCB",
         "account": "CASSMSHOA91",
@@ -65,9 +65,9 @@
     {
       "name": "Bảo",
       "class": "9A2",
-      "fee": 420000,
+      "fee": 10000,
       "info": "9A2Bao",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=420000&addInfo=9A2Bao&accountName=CHU%20DUC%20THANH",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A2Bao&accountName=CHU%20DUC%20THANH",
       "bank": {
         "id": "OCB",
         "account": "CASSMSHOA91",
@@ -77,9 +77,9 @@
     {
       "name": "Lâm Bình",
       "class": "9A2",
-      "fee": 0,
+      "fee": 10000,
       "info": "9A2LamBinh",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A2LamBinh&accountName=CHU%20DUC%20THANH",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A2LamBinh&accountName=CHU%20DUC%20THANH",
       "bank": {
         "id": "OCB",
         "account": "CASSMSHOA91",
@@ -89,9 +89,9 @@
     {
       "name": "An Khánh",
       "class": "9A9",
-      "fee": 0,
+      "fee": 10000,
       "info": "9A9AnKhanh",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9AnKhanh&accountName=CHU%20DUC%20THANH",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A9AnKhanh&accountName=CHU%20DUC%20THANH",
       "bank": {
         "id": "OCB",
         "account": "CASSMSHOA91",
@@ -101,9 +101,9 @@
     {
       "name": "Hoàng Thy",
       "class": "9A9",
-      "fee": 0,
+      "fee": 10000,
       "info": "9A9HoangThy",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9HoangThy&accountName=CHU%20DUC%20THANH",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A9HoangThy&accountName=CHU%20DUC%20THANH",
       "bank": {
         "id": "OCB",
         "account": "CASSMSHOA91",
@@ -113,9 +113,9 @@
     {
       "name": "Gia Bảo",
       "class": "9A9",
-      "fee": 1380000,
+      "fee": 10000,
       "info": "9A9GiaBao",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=1380000&addInfo=9A9GiaBao&accountName=CHU%20DUC%20THANH",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A9GiaBao&accountName=CHU%20DUC%20THANH",
       "bank": {
         "id": "OCB",
         "account": "CASSMSHOA91",
@@ -125,9 +125,9 @@
     {
       "name": "Bảo Quyên",
       "class": "9A9",
-      "fee": 0,
+      "fee": 10000,
       "info": "9A9BaoQuyen",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9BaoQuyen&accountName=CHU%20DUC%20THANH",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A9BaoQuyen&accountName=CHU%20DUC%20THANH",
       "bank": {
         "id": "OCB",
         "account": "CASSMSHOA91",
@@ -137,9 +137,9 @@
     {
       "name": "Tùng Dương",
       "class": "9A9",
-      "fee": 0,
+      "fee": 10000,
       "info": "9A9TungDuong",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9TungDuong&accountName=CHU%20DUC%20THANH",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A9TungDuong&accountName=CHU%20DUC%20THANH",
       "bank": {
         "id": "OCB",
         "account": "CASSMSHOA91",
@@ -149,9 +149,9 @@
     {
       "name": "Khôi Nguyên",
       "class": "9A9",
-      "fee": 0,
+      "fee": 10000,
       "info": "9A9KhoiNguyen",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9KhoiNguyen&accountName=CHU%20DUC%20THANH",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A9KhoiNguyen&accountName=CHU%20DUC%20THANH",
       "bank": {
         "id": "OCB",
         "account": "CASSMSHOA91",
@@ -161,9 +161,9 @@
     {
       "name": "Minh Dũng",
       "class": "9A9",
-      "fee": 360000,
+      "fee": 10000,
       "info": "9A9MinhDung",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=360000&addInfo=9A9MinhDung&accountName=CHU%20DUC%20THANH",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A9MinhDung&accountName=CHU%20DUC%20THANH",
       "bank": {
         "id": "OCB",
         "account": "CASSMSHOA91",
@@ -173,9 +173,9 @@
     {
       "name": "Giang",
       "class": "9A9",
-      "fee": 0,
+      "fee": 10000,
       "info": "9A9Giang",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9Giang&accountName=CHU%20DUC%20THANH",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A9Giang&accountName=CHU%20DUC%20THANH",
       "bank": {
         "id": "OCB",
         "account": "CASSMSHOA91",
@@ -185,9 +185,9 @@
     {
       "name": "Mạnh Hà",
       "class": "9A9",
-      "fee": 0,
+      "fee": 10000,
       "info": "9A9ManhHa",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9ManhHa&accountName=CHU%20DUC%20THANH",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A9ManhHa&accountName=CHU%20DUC%20THANH",
       "bank": {
         "id": "OCB",
         "account": "CASSMSHOA91",
@@ -197,9 +197,9 @@
     {
       "name": "Nhật Minh",
       "class": "9A9",
-      "fee": 0,
+      "fee": 10000,
       "info": "9A9NhatMinh",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9NhatMinh&accountName=CHU%20DUC%20THANH",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A9NhatMinh&accountName=CHU%20DUC%20THANH",
       "bank": {
         "id": "OCB",
         "account": "CASSMSHOA91",
@@ -209,9 +209,9 @@
     {
       "name": "Đức Quyền",
       "class": "9A9",
-      "fee": 0,
+      "fee": 10000,
       "info": "9A9DucQuyen",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9DucQuyen&accountName=CHU%20DUC%20THANH",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A9DucQuyen&accountName=CHU%20DUC%20THANH",
       "bank": {
         "id": "OCB",
         "account": "CASSMSHOA91",
@@ -221,9 +221,9 @@
     {
       "name": "Lê Thy",
       "class": "9A9",
-      "fee": 0,
+      "fee": 10000,
       "info": "9A9LeThy",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9LeThy&accountName=CHU%20DUC%20THANH",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A9LeThy&accountName=CHU%20DUC%20THANH",
       "bank": {
         "id": "OCB",
         "account": "CASSMSHOA91",
@@ -233,9 +233,9 @@
     {
       "name": "Châu Băng",
       "class": "9A9",
-      "fee": 0,
+      "fee": 10000,
       "info": "9A9ChauBang",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9ChauBang&accountName=CHU%20DUC%20THANH",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A9ChauBang&accountName=CHU%20DUC%20THANH",
       "bank": {
         "id": "OCB",
         "account": "CASSMSHOA91",
@@ -245,9 +245,9 @@
     {
       "name": "Phong",
       "class": "9A9",
-      "fee": 0,
+      "fee": 10000,
       "info": "9A9Phong",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9Phong&accountName=CHU%20DUC%20THANH",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A9Phong&accountName=CHU%20DUC%20THANH",
       "bank": {
         "id": "OCB",
         "account": "CASSMSHOA91",
@@ -257,9 +257,9 @@
     {
       "name": "Kim Anh",
       "class": "9A9",
-      "fee": 0,
+      "fee": 10000,
       "info": "9A9KimAnh",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9KimAnh&accountName=CHU%20DUC%20THANH",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A9KimAnh&accountName=CHU%20DUC%20THANH",
       "bank": {
         "id": "OCB",
         "account": "CASSMSHOA91",
@@ -269,9 +269,9 @@
     {
       "name": "Minh Hải",
       "class": "9A9",
-      "fee": 0,
+      "fee": 10000,
       "info": "9A9MinhHai",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9MinhHai&accountName=CHU%20DUC%20THANH",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A9MinhHai&accountName=CHU%20DUC%20THANH",
       "bank": {
         "id": "OCB",
         "account": "CASSMSHOA91",
@@ -281,9 +281,9 @@
     {
       "name": "Loan",
       "class": "9A9",
-      "fee": 0,
+      "fee": 10000,
       "info": "9A9Loan",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9Loan&accountName=CHU%20DUC%20THANH",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A9Loan&accountName=CHU%20DUC%20THANH",
       "bank": {
         "id": "OCB",
         "account": "CASSMSHOA91",
@@ -293,9 +293,9 @@
     {
       "name": "Thái",
       "class": "9A9",
-      "fee": 0,
+      "fee": 10000,
       "info": "9A9Thai",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9Thai&accountName=CHU%20DUC%20THANH",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A9Thai&accountName=CHU%20DUC%20THANH",
       "bank": {
         "id": "OCB",
         "account": "CASSMSHOA91",
@@ -305,9 +305,9 @@
     {
       "name": "Tuấn Hưng",
       "class": "9A9",
-      "fee": 0,
+      "fee": 10000,
       "info": "9A9TuanHung",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9TuanHung&accountName=CHU%20DUC%20THANH",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A9TuanHung&accountName=CHU%20DUC%20THANH",
       "bank": {
         "id": "OCB",
         "account": "CASSMSHOA91",
@@ -317,9 +317,9 @@
     {
       "name": "Thu Thuỷ",
       "class": "9A9",
-      "fee": 0,
+      "fee": 10000,
       "info": "9A9ThuThuy",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=0&addInfo=9A9ThuThuy&accountName=CHU%20DUC%20THANH",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A9ThuThuy&accountName=CHU%20DUC%20THANH",
       "bank": {
         "id": "OCB",
         "account": "CASSMSHOA91",
@@ -329,9 +329,9 @@
     {
       "name": "Khánh Linh",
       "class": "9A9",
-      "fee": 20000,
+      "fee": 10000,
       "info": "9A9KhanhLinh",
-      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=20000&addInfo=9A9KhanhLinh&accountName=CHU%20DUC%20THANH",
+      "qr": "https://img.vietqr.io/image/OCB-CASSMSHOA91-compact2.png?amount=10000&addInfo=9A9KhanhLinh&accountName=CHU%20DUC%20THANH",
       "bank": {
         "id": "OCB",
         "account": "CASSMSHOA91",
