@@ -384,7 +384,7 @@ body{
 }
 
 .bank-logo{
-  height:10px;
+  height:22px;
   width:auto;
   display:block;
 }
@@ -480,18 +480,26 @@ body{
 
 <div id="toast" class="toast"></div>
 
-<script>
-const JSON_FILE = "data.json";
+<script type="module">
+// ── Firebase config ──
+// Node key khớp với FIREBASE_NODE_MAP trong App Script
+// Mỗi lớp có 1 file HTML riêng, chỉ cần đổi NODE_KEY cho đúng lớp
+const FIREBASE_URL = "https://hoa-english-default-rtdb.firebaseio.com";
+const NODE_KEY     = "class9_1"; // 👈 đổi theo lớp: class6_1, class7_2, ...
 
-let currentData = null;
-let currentMap = new Map();
-let cardMap = new Map();
-let pollTimer = null;
-let lastModified = null;
-let activeInfo = null;
+// ── State ──
+let currentData   = null;
+let currentMap    = new Map();
+let cardMap       = new Map();
+let activeInfo    = null;
 let currentFilter = 'unpaid';
 let currentSearch = '';
-let toastTimer = null;
+let toastTimer    = null;
+
+// Firebase SSE (EventSource) để nhận realtime update
+let firebaseES      = null;
+let idleTimer       = null;
+const IDLE_TIMEOUT  = 5 * 60 * 1000; // 5 phút
 
 // ── Helpers ──
 
@@ -503,15 +511,24 @@ function fmtMoney(n) {
   return Number(n).toLocaleString('vi-VN') + 'đ';
 }
 
+// Sinh QR URL từ student data (không cần lưu trong Firebase)
+function qrUrl(s) {
+  if (s.fee <= 0) return null; // đã đóng → không cần QR
+  const sheetCode = s.bank.account.replace('CASSMSHOA', '');
+  return `https://img.vietqr.io/image/${s.bank.id}-${s.bank.account}-qr_only.png`
+       + `?amount=${s.fee}&addInfo=${encodeURIComponent(s.info)}`
+       + `&accountName=${encodeURIComponent(s.bank.name)}`;
+}
+
 // ── QR Preload ──
 
 const qrCache = new Set();
 
 function preloadAllQR(data) {
-  // Delay start slightly so render/paint gets priority
   const urls = data.students
-    .filter(s => s.fee > 0 && s.qr && !qrCache.has(s.qr))
-    .map(s => s.qr);
+    .filter(s => s.fee > 0)
+    .map(s => qrUrl(s))
+    .filter(u => u && !qrCache.has(u));
 
   if (!urls.length) return;
 
@@ -519,8 +536,7 @@ function preloadAllQR(data) {
   let i = 0;
 
   function loadBatch() {
-    const batch = urls.slice(i, i + BATCH);
-    batch.forEach(url => {
+    urls.slice(i, i + BATCH).forEach(url => {
       const img = new Image();
       img.onload = () => qrCache.add(url);
       img.src = url;
@@ -529,47 +545,102 @@ function preloadAllQR(data) {
     if (i < urls.length) setTimeout(loadBatch, 250);
   }
 
-  // Start after a short idle window
   setTimeout(loadBatch, 400);
 }
 
+// ── Firebase Realtime ──
 
+function connectFirebase() {
+  if (firebaseES) return; // đã kết nối
+  // Firebase Realtime DB hỗ trợ SSE (Server-Sent Events) native
+  const url = `${FIREBASE_URL}/${NODE_KEY}.json`;
+  firebaseES = new EventSource(url);
 
-async function loadData() {
-  try {
-    const res = await fetch(JSON_FILE + '?v=' + Date.now());
-    if (!res.ok) return null;
-    const json = await res.json();
-    return Array.isArray(json) ? { students: json } : json;
-  } catch { return null; }
+  firebaseES.addEventListener('put', e => {
+    try {
+      const msg = JSON.parse(e.data);
+      // msg.path = "/" (full replace) hoặc "/students/0/fee" (partial)
+      if (!msg.data) return;
+
+      let newData;
+      if (msg.path === '/') {
+        // Lần đầu load hoặc App Script PUT toàn bộ node
+        newData = msg.data;
+      } else {
+        // Update một field nhỏ → merge vào currentData
+        newData = applyPatch(currentData, msg.path, msg.data);
+      }
+
+      if (!newData || !newData.students) return;
+
+      const prevData = currentData;
+      render(newData);
+
+      // Kiểm tra học sinh đang mở có vừa đóng tiền không
+      if (activeInfo && prevData) {
+        const prev = prevData.students.find(s => s.info === activeInfo);
+        const curr = newData.students.find(s => s.info === activeInfo);
+        if (prev && curr && prev.fee > 0 && curr.fee <= 0) {
+          updatePaid(curr);
+          showToast('🎉 ' + curr.name + ' đã đóng học phí!');
+        }
+      }
+    } catch(err) {
+      console.error('Firebase SSE parse error:', err);
+    }
+  });
+
+  firebaseES.onerror = () => {
+    // SSE tự reconnect, không cần làm gì thêm
+    console.warn('Firebase SSE error — sẽ tự reconnect');
+  };
 }
 
-async function checkModified() {
-  try {
-    const res = await fetch(JSON_FILE, { method: 'HEAD', cache: 'no-store' });
-    const m = res.headers.get('last-modified');
-    if (!m) return true;
-    if (lastModified === null) { lastModified = m; return true; }
-    if (lastModified !== m) { lastModified = m; return true; }
-    return false;
-  } catch { return false; }
+function disconnectFirebase() {
+  if (firebaseES) {
+    firebaseES.close();
+    firebaseES = null;
+  }
 }
+
+// Áp partial patch từ Firebase SSE vào object hiện tại
+function applyPatch(base, path, value) {
+  if (!base) return base;
+  const data = JSON.parse(JSON.stringify(base)); // deep clone
+  const parts = path.replace(/^\//, '').split('/');
+  let node = data;
+  for (let i = 0; i < parts.length - 1; i++) {
+    if (node[parts[i]] === undefined) return base; // path không hợp lệ
+    node = node[parts[i]];
+  }
+  node[parts[parts.length - 1]] = value;
+  return data;
+}
+
+// ── Idle timeout (ngắt kết nối sau 5 phút không focus) ──
+
+function resetIdleTimer() {
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => {
+    disconnectFirebase();
+    showToast('⏸ Đã tạm ngắt kết nối do không hoạt động');
+  }, IDLE_TIMEOUT);
+}
+
+// Khi user tương tác → reset idle timer
+['click', 'touchstart', 'keydown', 'scroll'].forEach(evt => {
+  document.addEventListener(evt, () => {
+    // Nếu đã bị disconnect → reconnect
+    if (!firebaseES) connectFirebase();
+    resetIdleTimer();
+  }, { passive: true });
+});
 
 // ── Build map ──
 
 function buildMap(data) {
   currentMap.clear();
   data.students.forEach(s => currentMap.set(s.info, s));
-}
-
-// ── Stats ──
-
-function updateStats(data) {
-  const total = data.students.length;
-  const paid = data.students.filter(s => s.fee <= 0).length;
-  document.getElementById('statTotal').textContent = total;
-  document.getElementById('statPaid').textContent = paid;
-  document.getElementById('statUnpaid').textContent = total - paid;
 }
 
 // ── Render ──
@@ -608,9 +679,10 @@ function render(data) {
 
   const frag = document.createDocumentFragment();
 
-  filtered.forEach((s, idx) => {
+  filtered.forEach((s) => {
     const isPaid = s.fee <= 0;
-    const card = document.createElement('div');
+    const url    = isPaid ? null : qrUrl(s);   // gen QR URL tại đây
+    const card   = document.createElement('div');
     card.className = `card ${isPaid ? 'paid' : 'unpaid'}`;
     card.dataset.info = s.info;
 
@@ -648,20 +720,20 @@ function render(data) {
               </div>
             </div>
           </div>
+          ${isPaid ? '' : `
           <div class="qr-wrap">
             <div class="qr-header">SCAN QR CODE</div>
             <div class="qr-skeleton"></div>
-            <img src="${s.qr}" alt="QR chuyển khoản ${s.name}" class="qr-img" decoding="async">
+            <img src="${url}" alt="QR chuyển khoản ${s.name}" class="qr-img" decoding="async">
             <div class="qr-footer">
-              <span class="qr-name">${s.bank.owner || 'CHU DUC THANH'}</span>
+              <span class="qr-name">${s.bank.name}</span>
               <img src="ocb.png" alt="OCB" class="bank-logo">
             </div>
-            <button class="btn btn-blue btn-full" data-qr="${s.qr}" data-qr-name="${s.info}">Lưu mã QR</button>
-          </div>
+            <button class="btn btn-blue btn-full" data-qr="${url}" data-qr-name="${s.info}">Lưu mã QR</button>
+          </div>`}
         </div>
       </div>`;
 
-    // delegated events on this card
     card.addEventListener('click', e => {
       const copyTarget = e.target.closest('[data-copy]');
       if (copyTarget) { e.stopPropagation(); copyText(copyTarget.dataset.copy); return; }
@@ -675,8 +747,6 @@ function render(data) {
   });
 
   list.appendChild(frag);
-
-  // Preload QR images for unpaid students in the background
   preloadAllQR(data);
 }
 
@@ -689,24 +759,19 @@ function toggleExpand(card, info, isPaid) {
   const header = card.querySelector('.card-header');
   const isOpen = expand.style.maxHeight && expand.style.maxHeight !== '0px';
 
-  // collapse all
   document.querySelectorAll('.expand').forEach(el => el.style.maxHeight = '0px');
   document.querySelectorAll('.card-header').forEach(h => h.setAttribute('aria-expanded', 'false'));
   document.querySelectorAll('.card').forEach(c => c.classList.remove('active', 'dim'));
-  stopPolling();
 
   if (isOpen) { activeInfo = null; return; }
 
-  // open this one — force layout then animate
-  const qrImg = card.querySelector('.qr-img');
+  const qrImg  = card.querySelector('.qr-img');
   const qrWrap = card.querySelector('.qr-wrap');
 
   if (qrImg && !qrImg.complete) {
-    // Image not ready yet — show skeleton while waiting
     qrWrap.classList.add('loading-state');
     qrImg.onload = qrImg.onerror = () => {
       qrWrap.classList.remove('loading-state');
-      // recalc height now that image has dimensions
       if (expand.style.maxHeight !== '0px') {
         expand.style.maxHeight = expand.scrollHeight + 'px';
       }
@@ -718,34 +783,6 @@ function toggleExpand(card, info, isPaid) {
   activeInfo = info;
   card.classList.add('active');
   document.querySelectorAll('.card').forEach(c => { if (c !== card) c.classList.add('dim'); });
-  startPolling();
-}
-
-// ── Polling ──
-
-async function polling() {
-  if (!activeInfo) return;
-  const changed = await checkModified();
-  if (!changed) return;
-  const newData = await loadData();
-  if (!newData) return;
-  buildMap(newData);
-  const latest = currentMap.get(activeInfo);
-  if (latest && latest.fee <= 0) {
-    updatePaid(latest);
-    showToast('🎉 ' + latest.name + ' đã đóng học phí!');
-    stopPolling();
-    currentData = newData;
-  }
-}
-
-function startPolling() {
-  if (pollTimer) return;
-  pollTimer = setInterval(polling, 1500);
-}
-
-function stopPolling() {
-  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
 }
 
 // ── Update paid in-place ──
@@ -763,6 +800,10 @@ function updatePaid(student) {
   const avatar = card.querySelector('.avatar');
   if (avatar) { avatar.style.background = '#dcfce7'; avatar.style.color = '#15803d'; }
 
+  // Ẩn QR wrap khi đã đóng
+  const qrWrap = card.querySelector('.qr-wrap');
+  if (qrWrap) qrWrap.style.display = 'none';
+
   card.querySelector('.expand').style.maxHeight = '0px';
   document.querySelectorAll('.card').forEach(c => c.classList.remove('dim'));
   activeInfo = null;
@@ -775,7 +816,6 @@ async function copyText(text) {
     await navigator.clipboard.writeText(text);
     showToast('✓ Đã copy');
   } catch {
-    // fallback
     const ta = document.createElement('textarea');
     ta.value = text;
     ta.style.cssText = 'position:fixed;opacity:0';
@@ -792,10 +832,10 @@ async function copyText(text) {
 async function downloadQR(url, name) {
   if (/iPad|iPhone|iPod/.test(navigator.userAgent)) { window.open(url, '_blank'); return; }
   try {
-    const res = await fetch(url);
+    const res  = await fetch(url);
     const blob = await res.blob();
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = URL.createObjectURL(blob);
     a.download = name + '.png';
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
@@ -821,7 +861,6 @@ document.getElementById('filterGroup').addEventListener('click', e => {
   btn.classList.add('active');
   currentFilter = btn.dataset.filter;
   activeInfo = null;
-  stopPolling();
   if (currentData) render(currentData);
 });
 
@@ -836,19 +875,21 @@ document.getElementById('searchInput').addEventListener('input', e => {
   }, 160);
 });
 
-// ── Visibility ──
+// ── Visibility (ngắt/nối khi chuyển tab) ──
 
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden) { stopPolling(); }
-  else if (activeInfo) { startPolling(); }
+  if (document.hidden) {
+    disconnectFirebase();
+  } else {
+    connectFirebase();
+    resetIdleTimer();
+  }
 });
 
 // ── Init ──
 
-(async () => {
-  const data = await loadData();
-  if (data) render(data);
-})();
+connectFirebase();
+resetIdleTimer();
 </script>
 </body>
 </html>
