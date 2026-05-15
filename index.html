@@ -360,7 +360,9 @@ body{
 
 /* ── QR header / footer ── */
 .qr-header{
-  text-align:center;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
   font-size:11px;
   font-weight:700;
   letter-spacing:0.12em;
@@ -368,22 +370,44 @@ body{
   margin-bottom:6px;
 }
 
-.qr-footer{
+.qr-header-text{
+  flex:1;
+  text-align:center;
+}
+
+.qr-download-btn{
+  border:none;
+  background:none;
+  cursor:pointer;
+  padding:4px;
+  color:var(--slate-400);
   display:flex;
   align-items:center;
-  justify-content:center;
-  gap:8px;
+  border-radius:6px;
+  transition:color 0.15s,background 0.15s;
+  flex-shrink:0;
+}
+
+.qr-download-btn:hover{color:var(--blue);background:rgba(37,99,235,0.08)}
+.qr-download-btn:active{transform:scale(0.92)}
+
+/* bank logo full width, tỉ lệ 1:2.97 (cao:rộng) */
+.bank-logo{
+  width:100%;
+  height:auto;
+  aspect-ratio:2.97/1;
+  display:block;
+  object-fit:contain;
   margin-top:8px;
 }
 
-.bank-logo{
-  height:10px;
-  width:auto;
-  display:block;
+/* ── QR ── */
+.qr-wrap{
+  display:flex;
+  flex-direction:column;
 }
 
-/* ── QR ── */
-.qr-wrap img{
+.qr-wrap .qr-img{
   width:100%;
   border-radius:12px;
   display:block;
@@ -411,7 +435,7 @@ body{
 }
 
 .qr-wrap.loading-state .qr-skeleton{display:block}
-.qr-wrap.loading-state img{display:none}
+.qr-wrap.loading-state .qr-img{display:none}
 
 /* ── Toast ── */
 .toast{
@@ -438,11 +462,10 @@ body{
   transform:translateX(-50%) translateY(0);
 }
 
-@media(min-width:520px){
-  .expand-inner{flex-direction:row;flex-wrap:wrap}
-  .expand-inner > *{flex:1;min-width:220px}
-  .qr-wrap{min-width:unset;flex:0 0 200px}
-  .expand-inner .info-box{flex:1}
+/* Toast lớn hơn cho thông báo quan trọng */
+.toast.big{
+  font-size:15px;
+  padding:13px 22px;
 }
 </style>
 </head>
@@ -477,7 +500,7 @@ body{
 // ── Firebase config ──
 // Node key khớp với FIREBASE_NODE_MAP trong App Script
 // Mỗi lớp có 1 file HTML riêng, chỉ cần đổi NODE_KEY cho đúng lớp
-const FIREBASE_URL = "https://hoa-english-default-rtdb.asia-southeast1.firebasedatabase.app";
+const FIREBASE_URL = "https://hoa-english-default-rtdb.firebaseio.com";
 const NODE_KEY     = "class9_1"; // 👈 đổi theo lớp: class6_1, class7_2, ...
 
 // ── State ──
@@ -569,13 +592,23 @@ function connectFirebase() {
       const prevData = currentData;
       render(newData);
 
-      // Kiểm tra học sinh đang mở có vừa đóng tiền không
+      // Kiểm tra học sinh đang mở có thay đổi fee không
       if (activeInfo && prevData) {
         const prev = prevData.students.find(s => s.info === activeInfo);
         const curr = newData.students.find(s => s.info === activeInfo);
-        if (prev && curr && prev.fee > 0 && curr.fee <= 0) {
-          updatePaid(curr);
-          showToast('🎉 ' + curr.name + ' đã đóng học phí!');
+        if (prev && curr && prev.fee !== curr.fee) {
+          if (curr.fee <= 0) {
+            // Đã đóng đủ hoặc thừa
+            updatePaid(curr);
+            if (curr.fee < 0) {
+              showToast('⚠️ ' + curr.name + ' đã đóng thừa tiền!');
+            } else {
+              showToast('🎉 ' + curr.name + ' đã đóng học phí!');
+            }
+          } else if (curr.fee < prev.fee) {
+            // Đóng thiếu — fee giảm nhưng vẫn > 0
+            showToast('⚠️ ' + curr.name + ' đã đóng thiếu tiền!');
+          }
         }
       }
     } catch(err) {
@@ -697,6 +730,34 @@ function render(data) {
       </div>
       <div class="expand">
         <div class="expand-inner">
+          ${isPaid ? `
+          <div class="info-box" style="display:flex;flex-direction:column;gap:8px;">
+            <div class="info-item">
+              <div class="info-label">Nội dung chuyển khoản</div>
+              <div class="info-row">
+                <div class="info-value">${s.info}</div>
+                <button class="btn btn-blue" data-copy="${s.info}">Copy</button>
+              </div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Số tài khoản</div>
+              <div class="info-row">
+                <div class="info-value">${s.bank.account}</div>
+                <button class="btn btn-blue" data-copy="${s.bank.account}">Copy</button>
+              </div>
+            </div>
+          </div>` : ``}
+          ${isPaid ? '' : `
+          <div class="qr-wrap">
+            <div class="qr-header">
+              <div class="qr-header-text">SCAN QR CODE</div>
+              <button class="qr-download-btn" data-qr="${url}" data-qr-name="${s.info}" title="Tải QR">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              </button>
+            </div>
+            <div class="qr-skeleton"></div>
+            <img src="${url}" alt="QR chuyển khoản ${s.name}" class="qr-img" decoding="async">
+          </div>
           <div class="info-box" style="display:flex;flex-direction:column;gap:8px;">
             <div class="info-item">
               <div class="info-label">Nội dung chuyển khoản</div>
@@ -713,16 +774,7 @@ function render(data) {
               </div>
             </div>
           </div>
-          ${isPaid ? '' : `
-          <div class="qr-wrap">
-            <div class="qr-header">SCAN QR CODE</div>
-            <div class="qr-skeleton"></div>
-            <img src="${url}" alt="QR chuyển khoản ${s.name}" class="qr-img" decoding="async">
-            <div class="qr-footer">
-              <img src="ocb.png" alt="OCB" class="bank-logo">
-            </div>
-            <button class="btn btn-blue btn-full" data-qr="${url}" data-qr-name="${s.info}">Lưu mã QR</button>
-          </div>`}
+          <img src="ocb.png" alt="OCB" class="bank-logo">`}
         </div>
       </div>`;
 
@@ -801,25 +853,7 @@ function updatePaid(student) {
   activeInfo = null;
 }
 
-// ── Copy ──
-
-async function copyText(text) {
-  try {
-    await navigator.clipboard.writeText(text);
-    showToast('✓ Đã copy');
-  } catch {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.cssText = 'position:fixed;opacity:0';
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    showToast('✓ Đã copy');
-  }
-}
-
-// ── Download QR ──
+// ── Filter buttons ──
 
 async function downloadQR(url, name) {
   if (/iPad|iPhone|iPod/.test(navigator.userAgent)) { window.open(url, '_blank'); return; }
@@ -836,15 +870,30 @@ async function downloadQR(url, name) {
 
 // ── Toast ──
 
-function showToast(text) {
+function showToast(text, isCopy = false) {
   const t = document.getElementById('toast');
   t.textContent = text;
+  t.classList.toggle('big', !isCopy);
   t.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+  toastTimer = setTimeout(() => t.classList.remove('show'), isCopy ? 1000 : 3000);
 }
 
-// ── Filter buttons ──
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast('✓ Đã copy', true);
+  } catch {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('✓ Đã copy', true);
+  }
+}
 
 document.getElementById('filterGroup').addEventListener('click', e => {
   const btn = e.target.closest('.filter-btn');
