@@ -392,14 +392,16 @@ body{
 .qr-download-btn:active{transform:scale(0.92)}
 
 /* bank logo full width, tỉ lệ 1:2.97 (cao:rộng) */
-
-.bank-logo{
-  height:14px;
-  width:auto;
-  display:block;
-  margin:6px auto 0;
+.bank-logo{ 
+  width:60%; 
+  height:auto; 
+  align-items:center; 
+  aspect-ratio:2.97/1; 
+  display:block; 
+  object-fit:contain; 
+  margin-top:8px; 
 }
-
+  
 /* ── QR ── */
 .qr-wrap{
   display:flex;
