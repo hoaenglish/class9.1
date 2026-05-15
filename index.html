@@ -601,6 +601,7 @@ function connectFirebase() {
           // Chỉ update data ngầm, KHÔNG rebuild DOM — giữ nguyên QR đang mở
           currentData = newData;
           buildMap(newData);
+          needsRender = true; // nhớ render lại khi đóng card
           return;
         }
 
@@ -626,6 +627,7 @@ function connectFirebase() {
       }
 
       // Không có card nào đang mở → rebuild bình thường
+      needsRender = false;
       render(newData);
     } catch(err) {
       console.error('Firebase SSE parse error:', err);
@@ -678,7 +680,7 @@ function resetIdleTimer() {
   }, { passive: true });
 });
 
-// ── Build map ──
+let needsRender = false; // đánh dấu khi có update ngầm trong lúc card mở
 
 function buildMap(data) {
   currentMap.clear();
@@ -825,8 +827,10 @@ function toggleExpand(card, info, isPaid) {
 
   if (isOpen) {
     activeInfo = null;
-    // Có thể có data mới update ngầm trong lúc card mở → render lại ngay
-    if (currentData) render(currentData);
+    if (needsRender && currentData) {
+      needsRender = false;
+      render(currentData);
+    }
     return;
   }
 
