@@ -392,16 +392,15 @@ body{
 .qr-download-btn:active{transform:scale(0.92)}
 
 /* bank logo full width, tỉ lệ 1:2.97 (cao:rộng) */
-.bank-logo{ 
-  width:90%; 
-  height:auto; 
-  align-items:center; 
-  aspect-ratio:2.97/1; 
-  display:block; 
-  object-fit:contain; 
-  margin-top:8px; 
+.bank-logo{
+  width:100%;
+  height:auto;
+  aspect-ratio:2.97/1;
+  display:block;
+  object-fit:contain;
+  margin-top:8px;
 }
-  
+
 /* ── QR ── */
 .qr-wrap{
   display:flex;
@@ -824,7 +823,12 @@ function toggleExpand(card, info, isPaid) {
   document.querySelectorAll('.card-header').forEach(h => h.setAttribute('aria-expanded', 'false'));
   document.querySelectorAll('.card').forEach(c => c.classList.remove('active', 'dim'));
 
-  if (isOpen) { activeInfo = null; return; }
+  if (isOpen) {
+    activeInfo = null;
+    // Có thể có data mới update ngầm trong lúc card mở → render lại ngay
+    if (currentData) render(currentData);
+    return;
+  }
 
   const qrImg  = card.querySelector('.qr-img');
   const qrWrap = card.querySelector('.qr-wrap');
