@@ -376,15 +376,8 @@ body{
   margin-top:8px;
 }
 
-.qr-name{
-  font-size:13px;
-  font-weight:700;
-  letter-spacing:0.06em;
-  color:var(--slate-700);
-}
-
 .bank-logo{
-  height:22px;
+  height:10px;
   width:auto;
   display:block;
 }
@@ -726,7 +719,6 @@ function render(data) {
             <div class="qr-skeleton"></div>
             <img src="${url}" alt="QR chuyển khoản ${s.name}" class="qr-img" decoding="async">
             <div class="qr-footer">
-              <span class="qr-name">${s.bank.name}</span>
               <img src="ocb.png" alt="OCB" class="bank-logo">
             </div>
             <button class="btn btn-blue btn-full" data-qr="${url}" data-qr-name="${s.info}">Lưu mã QR</button>
