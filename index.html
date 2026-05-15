@@ -590,27 +590,43 @@ function connectFirebase() {
       if (!newData || !newData.students) return;
 
       const prevData = currentData;
-      render(newData);
 
       // Kiểm tra học sinh đang mở có thay đổi fee không
       if (activeInfo && prevData) {
         const prev = prevData.students.find(s => s.info === activeInfo);
         const curr = newData.students.find(s => s.info === activeInfo);
-        if (prev && curr && prev.fee !== curr.fee) {
-          if (curr.fee <= 0) {
-            // Đã đóng đủ hoặc thừa
-            updatePaid(curr);
-            if (curr.fee < 0) {
-              showToast('⚠️ ' + curr.name + ' đã đóng thừa tiền!');
-            } else {
-              showToast('🎉 ' + curr.name + ' đã đóng học phí!');
-            }
-          } else if (curr.fee < prev.fee) {
-            // Đóng thiếu — fee giảm nhưng vẫn > 0
-            showToast('⚠️ ' + curr.name + ' đã đóng thiếu tiền!');
+        const activeChanged = prev && curr && prev.fee !== curr.fee;
+
+        if (!activeChanged) {
+          // Chỉ update data ngầm, KHÔNG rebuild DOM — giữ nguyên QR đang mở
+          currentData = newData;
+          buildMap(newData);
+          return;
+        }
+
+        // Card đang mở vừa thay đổi → xử lý in-place, không rebuild toàn bộ
+        currentData = newData;
+        buildMap(newData);
+
+        if (curr.fee <= 0) {
+          updatePaid(curr);
+          showToast(curr.fee < 0
+            ? '⚠️ ' + curr.name + ' đã đóng thừa tiền!'
+            : '🎉 ' + curr.name + ' đã đóng học phí!');
+        } else if (curr.fee < prev.fee) {
+          showToast('⚠️ ' + curr.name + ' đã đóng thiếu tiền!');
+          // Cập nhật số tiền hiển thị trên card header mà không rebuild
+          const card = cardMap.get(activeInfo);
+          if (card) {
+            const amt = card.querySelector('.amount');
+            if (amt) amt.textContent = fmtMoney(curr.fee);
           }
         }
+        return;
       }
+
+      // Không có card nào đang mở → rebuild bình thường
+      render(newData);
     } catch(err) {
       console.error('Firebase SSE parse error:', err);
     }
